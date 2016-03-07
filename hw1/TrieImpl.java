@@ -3,20 +3,6 @@ import java.util.*;
  
 public class TrieImpl implements Trie {
     
-    private static class Node {
-       
-        public Node() {
-            children = new HashMap<Character, Node>();
-            isTerminal = false;
-            termCount = 0;
-        }
-        
-        public boolean isTerminal;
-        final public HashMap<Character, Node> children;
-        public int termCount;
-    }
-    
-    
     public TrieImpl() {
         root = new Node();
     }
@@ -49,7 +35,6 @@ public class TrieImpl implements Trie {
     public boolean remove(String element) {
         if (!contains(element)) return false;
         
-        boolean f = false;
         Node cur = root;
         for (int i = 0; i < element.length(); i++) {
             char c = element.charAt(i);
@@ -58,17 +43,14 @@ public class TrieImpl implements Trie {
             Node next = cur.children.get(c);
             if (next.termCount <= 1) {
                 cur.children.remove(c);
-                f = true;
-                break;
+                return true;
             }
             
             cur = next;
         }
         
-        if (!f) {
-            cur.termCount--;
-            cur.isTerminal = false;
-        }
+        cur.termCount--;
+        cur.isTerminal = false;
         
         return true;
     }
@@ -92,6 +74,19 @@ public class TrieImpl implements Trie {
         return cur;
     }
     
-    final private Node root;
+    private static class Node {
+       
+        public Node() {
+            children = new HashMap<Character, Node>();
+            isTerminal = false;
+            termCount = 0;
+        }
+        
+        public boolean isTerminal;
+        public final HashMap<Character, Node> children;
+        public int termCount;
+    }
+    
+    private final Node root;
 }
 
