@@ -4,23 +4,12 @@ import java.util.*;
 public class TrieImpl implements Trie {
     
     private static class Node {
-        
-        /*private static class CharacterHash implements HashFunction<Character> {
-            public int call(Character i) {
-                return i;
-            }
-        }*/
-        
+       
         public Node() {
-            //ch = new CharacterHash();
-        
-            children = new HashMap<Character, Node>(/*ch*/);
+            children = new HashMap<Character, Node>();
             isTerminal = false;
             termCount = 0;
         }
-        
-        
-        //private static CharacterHash ch;
         
         public boolean isTerminal;
         final public HashMap<Character, Node> children;
