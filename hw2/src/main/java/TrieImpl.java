@@ -77,71 +77,68 @@ public class TrieImpl implements Trie, StreamSerializable {
         return cur;
     }
 
+    private void dfsSerialize(Node node, StringBuilder str, OutputStream out) throws IOException {
+        if (node.parent != null) {
+            str.append(node.pSym);
+        }
+
+        if (node.isTerminal) {
+            out.write((str.toString() + "$").getBytes());
+        }
+
+        for (Node child : node.children.values()) {
+            dfsSerialize(child, str, out);
+        }
+
+        if (node.parent != null) {
+            str.deleteCharAt(str.length() - 1);
+        }
+    }
+
     @Override
     public void serialize(OutputStream out) throws IOException {
-        LinkedList<Node> t = new LinkedList<Node>();
-        getAllTermNodes(root, t);
-
-        for (Node r : t) {
-            String s = getString(r) + "$";
-            out.write(s.getBytes());
-        }
+        dfsSerialize(root, new StringBuilder(), out);
     }
 
     @Override
     public void deserialize(InputStream in) throws IOException {
+        root = new Node(' ', null);
+
         int i;
         char c;
-        String s = "";
+        StringBuilder str = new StringBuilder();
 
         while ((i = in.read()) != -1) {
             c = (char)i;
             if (c == '$') {
-                add(s);
-                s = "";
+                add(str.toString());
+                str = new StringBuilder();
             }
             else {
-                s += c;
+                str.append(c);
             }
-        }
-    }
-
-    private static void getAllTermNodes(Node r, LinkedList<Node> t) {
-        if (r.isTerminal) t.addLast(r);
-
-        for (Node c : r.children.values()) {
-            getAllTermNodes(c, t);
-        }
-    }
-
-    private static String getString(Node r) {
-        if (r.p == null) {
-            return "";
-        }
-        else {
-            return getString(r.p) + r.p_sym;
         }
     }
 
     private static class Node {
 
-        public Node(char p_symbol, Node parent) {
+        public Node(char pSymbol, Node parent) {
             children = new HashMap<Character, Node>();
             isTerminal = false;
             termCount = 0;
 
-            p_sym = p_symbol;
-            p = parent;
+            pSym = pSymbol;
+            this.parent = parent;
         }
 
         public boolean isTerminal;
         public final HashMap<Character, Node> children;
         public int termCount;
 
-        public char p_sym;
-        public Node p;
+        public char pSym;
+        public Node parent;
     }
 
-    private final Node root;
+    private Node root;
 }
 
