@@ -7,7 +7,7 @@ import java.util.*;
 public class TrieImpl implements Trie, StreamSerializable {
     
     public TrieImpl() {
-        root = new Node(' ', null);
+        root = new Node();
     }
 
     public boolean add(String element) {
@@ -19,7 +19,7 @@ public class TrieImpl implements Trie, StreamSerializable {
         
             char c = element.charAt(i);
             if (!cur.children.containsKey(c)) {
-                cur.children.put(c, new Node(c, cur));
+                cur.children.put(c, new Node());
             }
             cur = cur.children.get(c);
         }
@@ -67,42 +67,15 @@ public class TrieImpl implements Trie, StreamSerializable {
         
         return cur == null ? 0 : cur.termCount;
     }
-    
-    private Node get(String s) {
-        Node cur = root;
-        for (int i = 0; cur != null && i < s.length(); i++) {
-            cur = cur.children.get(s.charAt(i));
-        }
-        
-        return cur;
-    }
-
-    private void dfsSerialize(Node node, StringBuilder str, OutputStream out) throws IOException {
-        if (node.parent != null) {
-            str.append(node.pSym);
-        }
-
-        if (node.isTerminal) {
-            out.write((str.toString() + "$").getBytes());
-        }
-
-        for (Node child : node.children.values()) {
-            dfsSerialize(child, str, out);
-        }
-
-        if (node.parent != null) {
-            str.deleteCharAt(str.length() - 1);
-        }
-    }
 
     @Override
     public void serialize(OutputStream out) throws IOException {
-        dfsSerialize(root, new StringBuilder(), out);
+        dfsSerialize(root, true, ' ', new StringBuilder(), out);
     }
 
     @Override
     public void deserialize(InputStream in) throws IOException {
-        root = new Node(' ', null);
+        root = new Node();
 
         int i;
         char c;
@@ -120,23 +93,48 @@ public class TrieImpl implements Trie, StreamSerializable {
         }
     }
 
+
+    private Node get(String s) {
+        Node cur = root;
+        for (int i = 0; cur != null && i < s.length(); i++) {
+            cur = cur.children.get(s.charAt(i));
+        }
+
+        return cur;
+    }
+
+    private void dfsSerialize(Node node, boolean isRoot, char symbol,
+                              StringBuilder str, OutputStream out) throws IOException {
+        if (!isRoot) {
+            str.append(symbol);
+        }
+
+        if (node.isTerminal) {
+            out.write((str.toString() + "$").getBytes());
+        }
+
+        for (char sym : node.children.keySet()) {
+            Node child = node.children.get(sym);
+            dfsSerialize(child, false, sym, str, out);
+        }
+
+        if (!isRoot) {
+            str.deleteCharAt(str.length() - 1);
+        }
+    }
+
+
     private static class Node {
 
-        public Node(char pSymbol, Node parent) {
+        public Node() {
             children = new HashMap<Character, Node>();
             isTerminal = false;
             termCount = 0;
-
-            pSym = pSymbol;
-            this.parent = parent;
         }
 
         public boolean isTerminal;
         public final HashMap<Character, Node> children;
         public int termCount;
-
-        public char pSym;
-        public Node parent;
     }
 
     private Node root;
