@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 public class Collections {
 
-    public static <A, R> LinkedList<R> map(Iterable<A> a, Function1<A, R> f) {
+    public static <A, R> LinkedList<R> map(Iterable<A> a, Function1<? super A, R> f) {
         LinkedList<R> res = new LinkedList<R>();
         for (A arg : a) {
             res.addLast(f.apply(arg));
@@ -42,15 +42,15 @@ public class Collections {
         return takeWhile(a, p.not());
     }
 
-    public static <A> A foldl(Function2<A, A, A> f, A init, Iterable<A> a) {
-        return _foldl(f, init, a.iterator());
+    public static <A, R> R foldl(Function2<? super R, ? super A, R> f, R init, Iterable<A> a) {
+        return foldlHelper(f, init, a.iterator());
     }
 
-    public static <A> A foldr(Function2<A, A, A> f, A init, Iterable<A> a) {
-        return _foldr(f, init, a.iterator());
+    public static <A, R> R foldr(Function2<? super A, ? super R, R> f, R init, Iterable<A> a) {
+        return foldrHelper(f, init, a.iterator());
     }
 
-    private static <A> A _foldl(Function2<A, A, A> f, A init, Iterator<A> it) {
+    private static <A, R> R foldlHelper(Function2<? super R, ? super A, R> f, R init, Iterator<A> it) {
         // foldl f z (x:xs) = foldl f (f z x) xs
 
         if (it == null || !it.hasNext()) {
@@ -58,10 +58,10 @@ public class Collections {
         }
 
         A val = it.next();
-        return _foldl(f, f.apply(init, val), it);
+        return foldlHelper(f, f.apply(init, val), it);
     }
 
-    private static <A> A _foldr(Function2<A, A, A> f, A init, Iterator<A> it) {
+    private static <A, R> R foldrHelper(Function2<? super A, ? super R, R> f, R init, Iterator<A> it) {
         // foldr f z (x:xs) = f x (foldr f z xs)
 
         if (it == null || !it.hasNext()) {
@@ -69,6 +69,6 @@ public class Collections {
         }
 
         A val = it.next();
-        return f.apply(val, _foldr(f, init, it));
+        return f.apply(val, foldrHelper(f, init, it));
     }
 }

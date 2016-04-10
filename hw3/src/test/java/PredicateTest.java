@@ -8,9 +8,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class PredicateTest {
-    private Predicate<Integer> greaterThan5 = arg -> arg > 5;
+    private static final Predicate<Integer> greaterThan5 = arg -> arg > 5;
 
-    private Predicate<Integer> isEven = arg -> arg % 2 == 0;
+    private static final Predicate<Integer> isEven = arg -> arg % 2 == 0;
 
     @Test
     public void truePredicateReturnsTrue() throws Exception {

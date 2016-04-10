@@ -7,11 +7,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class Function1Test {
-    private Function1<String, Integer> getStringLength = s -> s.length();
+    private static final Function1<String, Integer> getStringLength = s -> s.length();
 
-    private Function1<Integer, Integer> mul2 = i -> i * 2;
+    private static final Function1<Integer, Integer> mul2 = i -> i * 2;
 
-    private Function1<Object, String> toString = obj -> obj.toString();
+    private static final Function1<Object, String> toString = obj -> obj.toString();
 
     @Test
     public void testApply() throws Exception {
@@ -32,6 +32,34 @@ public class Function1Test {
         assertEquals("8", getSquareSting.apply(4));
         assertEquals("2", getSquareSting.apply(1));
         assertEquals("0", getSquareSting.apply(0));
+
+        Function1<Integer, Derived> foo = i -> new Derived(i);
+        Function1<Base, Integer> bar = b -> b.f();
+        Function1<Integer, Integer> c = foo.compose(bar);
+        assertEquals(20, (int)c.apply(10));
     }
 
+    private class Base {
+        protected int a;
+
+        Base(int a) {
+            this.a = a;
+        }
+
+        public int f() {
+            return a;
+        }
+    }
+
+    private class Derived extends Base {
+
+        Derived(int a) {
+            super(a);
+        }
+
+        @Override
+        public int f() {
+            return a + 10;
+        }
+    }
 }
