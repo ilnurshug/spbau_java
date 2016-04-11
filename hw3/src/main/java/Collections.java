@@ -15,7 +15,7 @@ public class Collections {
         return res;
     }
 
-    public static <A> LinkedList<A> filter(Iterable<A> a, Predicate<A> p) {
+    public static <A> LinkedList<A> filter(Iterable<A> a, Predicate<? super A> p) {
         LinkedList<A> res = new LinkedList<A>();
         for (A arg : a) {
             if (p.apply(arg)) {
@@ -25,7 +25,7 @@ public class Collections {
         return res;
     }
 
-    public static <A> LinkedList<A> takeWhile(Iterable<A> a, Predicate<A> p) {
+    public static <A> LinkedList<A> takeWhile(Iterable<A> a, Predicate<? super A> p) {
         LinkedList<A> res = new LinkedList<A>();
         for (A arg : a) {
             if (p.apply(arg)) {
@@ -38,19 +38,19 @@ public class Collections {
         return res;
     }
 
-    public static <A> LinkedList<A> takeUnless(Iterable<A> a, Predicate<A> p) {
+    public static <A> LinkedList<A> takeUnless(Iterable<A> a, Predicate<? super A> p) {
         return takeWhile(a, p.not());
     }
 
-    public static <A, R> R foldl(Function2<? super R, ? super A, R> f, R init, Iterable<A> a) {
+    public static <A, R> R foldl(Function2<R, ? super A, R> f, R init, Iterable<A> a) {
         return foldlHelper(f, init, a.iterator());
     }
 
-    public static <A, R> R foldr(Function2<? super A, ? super R, R> f, R init, Iterable<A> a) {
+    public static <A, R> R foldr(Function2<? super A, R, R> f, R init, Iterable<A> a) {
         return foldrHelper(f, init, a.iterator());
     }
 
-    private static <A, R> R foldlHelper(Function2<? super R, ? super A, R> f, R init, Iterator<A> it) {
+    private static <A, R> R foldlHelper(Function2<R, ? super A, R> f, R init, Iterator<A> it) {
         // foldl f z (x:xs) = foldl f (f z x) xs
 
         if (it == null || !it.hasNext()) {
@@ -61,7 +61,7 @@ public class Collections {
         return foldlHelper(f, f.apply(init, val), it);
     }
 
-    private static <A, R> R foldrHelper(Function2<? super A, ? super R, R> f, R init, Iterator<A> it) {
+    private static <A, R> R foldrHelper(Function2<? super A, R, R> f, R init, Iterator<A> it) {
         // foldr f z (x:xs) = f x (foldr f z xs)
 
         if (it == null || !it.hasNext()) {
