@@ -25,7 +25,7 @@ public class ThreadPoolImplTest {
         threadPool.shutdown();
         future.get();
     }
-    
+
     @Test
     public void isReadyTest() throws InterruptedException {
         ThreadPool threadPool = new ThreadPoolImpl(1);

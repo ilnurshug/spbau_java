@@ -16,7 +16,7 @@ public class MergeCommand extends Command {
     }
 
     @Override
-    public void exec() {
+    protected void execImpl() {
 
     }
 }

@@ -2,6 +2,7 @@ package vcs.commands;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import vcs.Config;
 import vcs.util.VcsUtils;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class AddCommand extends Command {
     }
 
     @Override
-    public void exec() {
-
+    protected void execImpl() {
+        Config.INSTANCE.supervisedFiles.addAll(files);
     }
 }

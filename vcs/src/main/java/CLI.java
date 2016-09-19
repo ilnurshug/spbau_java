@@ -41,6 +41,8 @@ public class CLI {
             for testing purposes only
          */
         try {
+            init.exec();
+
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
             String line;
