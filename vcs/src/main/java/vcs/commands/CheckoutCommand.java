@@ -17,7 +17,7 @@ public class CheckoutCommand extends Command {
     @Parameter(description = "choose branch to switch")
     private String branch;
 
-    @Parameter(description = "commit id")
+    @Parameter(names = "-id", description = "commit id")
     private int id = -1;
 
     public CheckoutCommand() {}
@@ -32,6 +32,11 @@ public class CheckoutCommand extends Command {
         this.branch = branch;
     }
 
+    /**
+     * switch to selected branch
+     * or to selected commit on specified branch
+     * or to newly created branch
+     */
     @Override
     protected void execImpl() {
         if (!canCheckout()) {
@@ -70,7 +75,7 @@ public class CheckoutCommand extends Command {
         }
     }
 
-    public static void smallCheckout(String branch) throws ClassNotFoundException, IOException {
+    static void smallCheckout(String branch) throws ClassNotFoundException, IOException {
         GlobalConfig.instance.graph.checkout(branch);
         CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
     }

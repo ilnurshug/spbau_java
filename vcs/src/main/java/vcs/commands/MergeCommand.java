@@ -22,6 +22,9 @@ public class MergeCommand extends Command {
         this.branch = branch;
     }
 
+    /**
+     * merge selected branch with current branch
+     */
     @Override
     protected void execImpl() {
         if (needToCommitBeforeMerge()) {

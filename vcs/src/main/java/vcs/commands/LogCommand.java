@@ -8,6 +8,10 @@ import vcs.util.VcsUtils;
 
 @Parameters(commandNames = VcsUtils.LOG, commandDescription = "Show current branch's history")
 public class LogCommand extends Command {
+
+    /**
+     * show commit history of current branch
+     */
     @Override
     protected void execImpl() {
         Commit c = GlobalConfig.instance.graph.getHead();

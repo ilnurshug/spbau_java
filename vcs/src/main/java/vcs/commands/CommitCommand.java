@@ -29,10 +29,16 @@ public class CommitCommand extends Command implements Serializable {
         this.message = message;
     }
 
+    /**
+     * @return commit message
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * commit changes in supervised files
+     */
     @Override
     protected void execImpl() {
         if (message == null || message.length() == 0) {

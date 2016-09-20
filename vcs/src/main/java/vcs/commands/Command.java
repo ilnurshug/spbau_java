@@ -8,6 +8,9 @@ import java.io.IOException;
 
 public abstract class Command {
 
+    /**
+     * execute command, and serialize result of execution
+     */
     public void exec() {
         execImpl();
 

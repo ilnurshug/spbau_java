@@ -20,6 +20,9 @@ public class AddCommand extends Command {
         this.files = files;
     }
 
+    /**
+     * add files to list of supervised files
+     */
     @Override
     protected void execImpl() {
         // TODO:
