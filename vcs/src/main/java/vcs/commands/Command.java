@@ -1,6 +1,7 @@
 package vcs.commands;
 
-import vcs.Config;
+import vcs.CommitConfig;
+import vcs.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
@@ -11,7 +12,8 @@ public abstract class Command {
         execImpl();
 
         try {
-            VcsUtils.serialize(Config.INSTANCE, VcsUtils.CONFIG_FILE);
+            VcsUtils.serialize(GlobalConfig.instance, VcsUtils.GLOBAL_CONFIG_FILE);
+            VcsUtils.serialize(CommitConfig.instance, GlobalConfig.getHeadCommitDir() + "config");
         } catch (IOException e) {
             VcsUtils.log("serialization failure");
             e.printStackTrace();

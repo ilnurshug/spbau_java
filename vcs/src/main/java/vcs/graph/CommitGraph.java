@@ -25,6 +25,10 @@ public class CommitGraph implements Serializable {
         return head;
     }
 
+    public Commit getLastCommitOnBranch(String branch) {
+        return branches.getOrDefault(branch, null);
+    }
+
     public boolean merge(String branch) {
         if (!branch.contains(branch)) {
             VcsUtils.log("no such branch");

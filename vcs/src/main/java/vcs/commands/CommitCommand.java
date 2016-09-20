@@ -2,15 +2,15 @@ package vcs.commands;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.apache.commons.io.FileUtils;
-import vcs.Config;
+import vcs.CommitConfig;
+import vcs.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,25 +40,40 @@ public class CommitCommand extends Command implements Serializable {
             return;
         }
 
-        Config.INSTANCE.graph.commit(message);
+        if (VcsUtils.diffDirFiles(
+                CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                GlobalConfig.getProjectDir(),
+                GlobalConfig.getHeadCommitDir()) == 0)
+        {
+            VcsUtils.log("nothing to commit");
+            return;
+        }
 
-        String branch = Config.INSTANCE.graph.getHead().getBranch();
-        int commitId = Config.INSTANCE.graph.getHead().getId();
+        GlobalConfig.instance.graph.commit(message);
 
-        String source = Config.INSTANCE.dir + "/";
-        String dest = VcsUtils.BRANCHES_DIR + "/" + branch + "/" + commitId + "/";
+        String source = GlobalConfig.getProjectDir();
+        String dest = GlobalConfig.getHeadCommitDir();
 
         try {
+            refreshSupervisedFilesList();
+
             Files.createDirectories(Paths.get(dest));
 
             VcsUtils.copyFiles(
-                    Config.INSTANCE.supervisedFiles.stream().collect(Collectors.toList()),
+                    CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
                     source,
-                    dest
+                    dest, true
             );
         } catch (Exception e) {
-            Config.rollbackCommand();
+
             e.printStackTrace();
         }
+    }
+
+    private void refreshSupervisedFilesList() {
+        CommitConfig.instance.supervisedFiles = CommitConfig.instance.supervisedFiles
+                .stream()
+                .filter(f -> new File(VcsUtils.PROJECT_DIR + "/" + f).exists())
+                .collect(Collectors.toCollection(HashSet::new));
     }
 }

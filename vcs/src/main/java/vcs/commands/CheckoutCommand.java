@@ -2,12 +2,11 @@ package vcs.commands;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import vcs.Config;
+import vcs.CommitConfig;
+import vcs.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.CHECKOUT, commandDescription = "Go to selected commit or branch")
@@ -39,35 +38,40 @@ public class CheckoutCommand extends Command {
             return;
         }
 
-        String branch = Config.INSTANCE.graph.getHead().getBranch();
-        int commitId = Config.INSTANCE.graph.getHead().getId();
-
-        String source = VcsUtils.BRANCHES_DIR + "/" + branch + "/" + commitId + "/";
-        String dest = Config.INSTANCE.dir + "/";
+        String source = GlobalConfig.getHeadCommitDir();
+        String dest = GlobalConfig.getProjectDir();
 
         try {
+            smallCheckout(branch);
+
             VcsUtils.copyFiles(
-                    Config.INSTANCE.supervisedFiles.stream().collect(Collectors.toList()),
+                    CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
                     source,
-                    dest
+                    dest, true
             );
         } catch (Exception e) {
-            Config.rollbackCommand();
+            /*GlobalConfig.rollback();
+            CommitConfig.rollback();*/
             e.printStackTrace();
         }
     }
 
     private boolean canCheckout() {
         if (createBranch) {
-            return Config.INSTANCE.graph.createBranch(branch);
+            return GlobalConfig.instance.graph.createBranch(branch);
         }
         else {
             if (id == -1) {
-                return Config.INSTANCE.graph.checkout(branch);
+                return GlobalConfig.instance.graph.checkout(branch);
             }
             else {
-                return Config.INSTANCE.graph.checkout(branch, id);
+                return GlobalConfig.instance.graph.checkout(branch, id);
             }
         }
+    }
+
+    public static void smallCheckout(String branch) throws ClassNotFoundException, IOException {
+        GlobalConfig.instance.graph.checkout(branch);
+        CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
     }
 }
