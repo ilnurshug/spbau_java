@@ -39,7 +39,7 @@ public class CheckoutCommand extends Command {
      */
     @Override
     protected void execImpl() {
-        if (!canCheckout()) {
+        if (!canCheckout(createBranch, branch, id)) {
             return;
         }
 
@@ -68,16 +68,16 @@ public class CheckoutCommand extends Command {
         }
     }
 
-    private boolean canCheckout() {
+    private boolean canCheckout(boolean createBranch, String branch, int commitId) {
         if (createBranch) {
             return GlobalConfig.instance.graph.createBranch(branch);
         }
         else {
-            if (id == -1) {
+            if (commitId == -1) {
                 return GlobalConfig.instance.graph.checkout(branch);
             }
             else {
-                return GlobalConfig.instance.graph.checkout(branch, id);
+                return GlobalConfig.instance.graph.checkout(branch, commitId);
             }
         }
     }
