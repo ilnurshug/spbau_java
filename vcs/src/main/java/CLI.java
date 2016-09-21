@@ -16,6 +16,7 @@ public class CLI {
     private static final LogCommand log = new LogCommand();
     private static final InitCommand init = new InitCommand();
     private static final MergeCommand merge = new MergeCommand();
+    private static final StatusCommand status = new StatusCommand();
 
     static {
         cmd.put(VcsUtils.COMMIT, commit);
@@ -24,6 +25,7 @@ public class CLI {
         cmd.put(VcsUtils.LOG, log);
         cmd.put(VcsUtils.INIT, init);
         cmd.put(VcsUtils.MERGE, merge);
+        cmd.put(VcsUtils.STATUS, status);
     }
 
     public static void main(String[] args) {
@@ -54,6 +56,7 @@ public class CLI {
         jc.addCommand(log);
         jc.addCommand(init);
         jc.addCommand(merge);
+        jc.addCommand(status);
 
         try {
             jc.parse(args);

@@ -22,6 +22,7 @@ public class VcsUtils {
     public static final String LOG = "log";
     public static final String INIT = "init";
     public static final String MERGE = "merge";
+    public static final String STATUS = "status";
 
     public static String getFileHash(String filename) throws IOException {
         FileInputStream fis = new FileInputStream(new File(filename));
