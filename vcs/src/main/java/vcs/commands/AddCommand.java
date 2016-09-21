@@ -30,7 +30,9 @@ public class AddCommand extends Command {
             System.out.println(new File(f).getAbsolutePath());
         }
 
-        files = files.stream().filter(f -> new File(f).exists()).collect(Collectors.toList());
+        files = files.stream()
+                .filter(f -> new File(VcsUtils.PROJECT_DIR + "/" + f).exists())
+                .collect(Collectors.toList());
 
         CommitConfig.instance.supervisedFiles.addAll(files);
     }

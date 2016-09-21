@@ -70,6 +70,8 @@ public class CommitCommand extends Command implements Serializable {
                     source,
                     dest, true
             );
+
+            serializeConfig();
         } catch (Exception e) {
 
             e.printStackTrace();

@@ -8,16 +8,14 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 public class CLI {
-    private static final JCommander jc = new JCommander();
-
     private static HashMap<String, Command> cmd = new HashMap<>();
 
-    private static final CommitCommand      commit      = new CommitCommand();
-    private static final AddCommand         add         = new AddCommand();
-    private static final CheckoutCommand    checkout    = new CheckoutCommand();
-    private static final LogCommand         log         = new LogCommand();
-    private static final InitCommand        init        = new InitCommand();
-    private static final MergeCommand       merge       = new MergeCommand();
+    private static final CommitCommand commit = new CommitCommand();
+    private static final AddCommand add = new AddCommand();
+    private static final CheckoutCommand checkout = new CheckoutCommand();
+    private static final LogCommand log = new LogCommand();
+    private static final InitCommand init = new InitCommand();
+    private static final MergeCommand merge = new MergeCommand();
 
     static {
         cmd.put(VcsUtils.COMMIT, commit);
@@ -26,13 +24,6 @@ public class CLI {
         cmd.put(VcsUtils.LOG, log);
         cmd.put(VcsUtils.INIT, init);
         cmd.put(VcsUtils.MERGE, merge);
-
-        jc.addCommand(commit);
-        jc.addCommand(add);
-        jc.addCommand(checkout);
-        jc.addCommand(log);
-        jc.addCommand(init);
-        jc.addCommand(merge);
     }
 
     public static void main(String[] args) {
@@ -41,13 +32,11 @@ public class CLI {
             for testing purposes only
          */
         try {
-            init.exec();
-
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
             String line;
             while ((line = br.readLine()) != null) {
-                run(line.split(" "));
+                run(line.split(" "));  // problem with strings
             }
         }
         catch (IOException e) {
@@ -57,13 +46,22 @@ public class CLI {
     }
 
     private static void run(String[] args) {
-        jc.parse(args);
+        final JCommander jc = new JCommander();
 
-        Command c = cmd.getOrDefault(jc.getParsedCommand(), null);
-        if (c != null) {
+        jc.addCommand(commit);
+        jc.addCommand(add);
+        jc.addCommand(checkout);
+        jc.addCommand(log);
+        jc.addCommand(init);
+        jc.addCommand(merge);
+
+        try {
+            jc.parse(args);
+
+            Command c = cmd.getOrDefault(jc.getParsedCommand(), null);
             c.exec();
-        }
-        else {
+        } catch (Exception e) {
+            VcsUtils.log("unknown command");
             jc.usage();
         }
     }

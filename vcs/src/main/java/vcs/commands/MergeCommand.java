@@ -8,18 +8,19 @@ import vcs.util.VcsUtils;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
 public class MergeCommand extends Command {
-    @Parameter(description = "Select branch")
-    private String branch;
+    @Parameter(required = true, description = "Select branch")
+    private List<String> branches = new LinkedList<>();
 
     public MergeCommand() {}
 
     public MergeCommand(String branch) {
-        this.branch = branch;
+        branches.add(branch);
     }
 
     /**
@@ -33,7 +34,7 @@ public class MergeCommand extends Command {
         }
 
         String firstBranch = GlobalConfig.instance.graph.getHead().getBranch();
-        String secondBranch = branch;
+        String secondBranch = branches.get(0);
 
         if (!canMerge(firstBranch, secondBranch)) {
             VcsUtils.log("merge failure");
@@ -51,6 +52,8 @@ public class MergeCommand extends Command {
 
             VcsUtils.copyFiles(unionFiles, firstDir, mergeDir, true);
             VcsUtils.copyFiles(unionFiles, secondDir, mergeDir, false);
+
+            serializeConfig();
 
         } catch (ClassNotFoundException | IOException e) {
             VcsUtils.log("merge failure");

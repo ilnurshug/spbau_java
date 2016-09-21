@@ -72,7 +72,7 @@ public class VcsUtils {
                         File sourceFile = new File(source + f);
                         File destFile = new File(dest + f);
                         if (overwrite || !destFile.exists()) {
-                            FileUtils.copyDirectory(sourceFile, destFile);
+                            FileUtils.copyFile(sourceFile, destFile);
                         }
                     } catch (IOException e) {
                         VcsUtils.log("copy failure");

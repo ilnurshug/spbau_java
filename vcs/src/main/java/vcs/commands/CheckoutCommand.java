@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.CHECKOUT, commandDescription = "Go to selected commit or branch")
 public class CheckoutCommand extends Command {
-    @Parameter(names = "-b", description = "Create new branch")
+    @Parameter(names = "-new", description = "Create new branch")
     private boolean createBranch = false;
 
-    @Parameter(description = "choose branch to switch")
+    @Parameter(names = "-b", required = true, description = "choose branch to switch")
     private String branch;
 
-    @Parameter(names = "-id", description = "commit id")
+    @Parameter(names = "-commit", description = "commit id")
     private int id = -1;
 
     public CheckoutCommand() {}
@@ -54,6 +54,8 @@ public class CheckoutCommand extends Command {
                     source,
                     dest, true
             );
+
+            serializeConfig();
         } catch (Exception e) {
             /*GlobalConfig.rollback();
             CommitConfig.rollback();*/

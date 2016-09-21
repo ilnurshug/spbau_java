@@ -14,7 +14,9 @@ public class GlobalConfig implements Serializable {
     public CommitGraph graph = new CommitGraph();
 
     public static String getHeadCommitDir() {
-        return getLastCommitDir(instance.graph.getHead().getBranch());
+        String branch = instance.graph.getHead().getBranch();
+        int commitId = instance.graph.getHead().getId();
+        return VcsUtils.BRANCHES_DIR + "/" + branch + "/" + commitId + "/";
     }
 
     public static String getLastCommitDir(String branch) {
