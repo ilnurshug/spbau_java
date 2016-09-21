@@ -29,7 +29,7 @@ public class InitCommand extends Command {
                 serializeTempConfig();
                 serializeConfig();
 
-                VcsUtils.log("initialized empty VCS repository");
+                System.out.println("initialized empty VCS repository");
             }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("unable to init repo");

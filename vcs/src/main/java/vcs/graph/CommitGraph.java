@@ -31,7 +31,7 @@ public class CommitGraph implements Serializable {
 
     public boolean merge(String branch) {
         if (!branch.contains(branch)) {
-            VcsUtils.log("no such branch");
+            System.err.println("no such branch");
             return false;
         }
 
@@ -56,7 +56,7 @@ public class CommitGraph implements Serializable {
 
     public boolean createBranch(String branch) {
         if (branch.contains(branch)) {
-            VcsUtils.log("branch already exists");
+            System.err.println("branch already exists");
             return false;
         }
 
@@ -68,7 +68,7 @@ public class CommitGraph implements Serializable {
 
     public boolean checkout(String branch) {
         if (!branch.contains(branch)) {
-            VcsUtils.log("no such branch");
+            System.err.println("no such branch");
             return false;
         }
 
@@ -79,7 +79,7 @@ public class CommitGraph implements Serializable {
     public boolean checkout(String branch, int commitId) {
         Commit branchHead = branches.getOrDefault(branch, null);
         if (branchHead == null || commitId < 0 ||  branchHead.getId() < commitId) {
-            VcsUtils.log("can not switch to selected commit on branch");
+            System.err.println("can not switch to selected commit on branch");
             return false;
         }
 

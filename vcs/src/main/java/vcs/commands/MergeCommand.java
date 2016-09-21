@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
@@ -30,7 +31,7 @@ public class MergeCommand extends Command {
     @Override
     protected void execImpl() {
         if (needToCommitBeforeMerge()) {
-            VcsUtils.log("commit changes before merge");
+            System.err.println("commit changes before merge");
             return;
         }
 
@@ -38,7 +39,6 @@ public class MergeCommand extends Command {
         String secondBranch = branches.get(0);
 
         if (!canMerge(firstBranch, secondBranch)) {
-            VcsUtils.log("merge failure");
             return;
         }
 
@@ -57,7 +57,7 @@ public class MergeCommand extends Command {
             serializeConfig();
 
         } catch (ClassNotFoundException | IOException e) {
-            VcsUtils.log("merge failure");
+            System.err.println("merge failure");
             e.printStackTrace();
         }
     }
@@ -73,8 +73,8 @@ public class MergeCommand extends Command {
 
             if (differentFiles.size() > 0)
             {
-                VcsUtils.log("merge conflict detected in following files:");
-                differentFiles.forEach(VcsUtils::log);
+                System.out.println("merge conflict detected in following files:");
+                differentFiles.forEach(System.out::println);
                 return false;
             }
 

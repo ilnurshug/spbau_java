@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class VcsUtils {
@@ -62,10 +60,6 @@ public class VcsUtils {
         return obj;
     }
 
-    public static void log(String message) {
-        Logger.getAnonymousLogger().log(Level.INFO, message);
-    }
-
     public static void copyFiles(List<String> files, String source, String dest, boolean overwrite) {
         files = files.stream().filter(f -> new File(source + f).exists()).collect(Collectors.toList());
 
@@ -78,7 +72,7 @@ public class VcsUtils {
                             FileUtils.copyFile(sourceFile, destFile);
                         }
                     } catch (IOException e) {
-                        VcsUtils.log("copy failure");
+                        System.err.println("copy failure");
                         throw new RuntimeException(e);
                     }
                 }
@@ -92,7 +86,7 @@ public class VcsUtils {
                     try {
                         Files.delete(Paths.get(dir + f));
                     } catch (IOException e) {
-                        VcsUtils.log("deletion failure");
+                        System.err.println("deletion failure");
                     }
                 });
     }
@@ -118,7 +112,7 @@ public class VcsUtils {
                 }
             }
             catch (IOException e) {
-                VcsUtils.log("hashing failure");
+                System.err.println("hashing failure");
             }
         });
 

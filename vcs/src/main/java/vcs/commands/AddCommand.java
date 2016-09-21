@@ -26,14 +26,13 @@ public class AddCommand extends Command {
     @Override
     protected void execImpl() {
         // TODO:
-        for (String f : files) {
-            System.out.println(new File(f).getAbsolutePath());
-        }
 
+        System.out.println("added files:");
         files = files.stream()
                 .filter(f -> new File(VcsUtils.PROJECT_DIR + "/" + f).exists())
                 .collect(Collectors.toList());
 
         CommitConfig.instance.supervisedFiles.addAll(files);
+        System.out.println("---");
     }
 }

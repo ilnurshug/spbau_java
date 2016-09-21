@@ -24,11 +24,11 @@ public abstract class Command {
                 serializeTempConfig();
             }
             else {
-                VcsUtils.log("repository is empty");
+                System.out.println("repository is empty");
             }
 
         } catch (IOException | ClassNotFoundException e) {
-            VcsUtils.log("serialization failure");
+            System.err.println("serialization failure");
             e.printStackTrace();
         }
     }

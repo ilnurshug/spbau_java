@@ -42,7 +42,7 @@ public class CommitCommand extends Command implements Serializable {
     @Override
     protected void execImpl() {
         if (message == null || message.length() == 0) {
-            VcsUtils.log("specify commit message");
+            System.out.println("specify commit message");
             return;
         }
 
@@ -51,7 +51,7 @@ public class CommitCommand extends Command implements Serializable {
                 GlobalConfig.getProjectDir(),
                 GlobalConfig.getHeadCommitDir()) == 0)
         {
-            VcsUtils.log("nothing to commit");
+            System.out.println("nothing to commit");
             return;
         }
 
@@ -72,6 +72,8 @@ public class CommitCommand extends Command implements Serializable {
             );
 
             serializeConfig();
+
+            System.out.println("successful commit");
         } catch (Exception e) {
 
             e.printStackTrace();

@@ -64,7 +64,7 @@ public class CLI {
             Command c = cmd.getOrDefault(jc.getParsedCommand(), null);
             c.exec();
         } catch (Exception e) {
-            VcsUtils.log("unknown command");
+            System.err.println("unknown command");
             jc.usage();
         }
     }
