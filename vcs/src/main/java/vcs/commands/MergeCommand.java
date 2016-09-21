@@ -25,6 +25,7 @@ public class MergeCommand extends Command {
 
     /**
      * merge selected branch with current branch
+     * ASSUMPTION: head is pointing to the last commit on current branch
      */
     @Override
     protected void execImpl() {

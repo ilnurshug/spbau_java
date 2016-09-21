@@ -47,7 +47,12 @@ public class CheckoutCommand extends Command {
         String dest = GlobalConfig.getProjectDir();
 
         try {
-            smallCheckout(branch);
+            if (createBranch || id == -1) {
+                smallCheckout(branch);
+            }
+            else {
+                smallCheckout(branch, id);
+            }
 
             VcsUtils.copyFiles(
                     CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
@@ -79,6 +84,11 @@ public class CheckoutCommand extends Command {
 
     static void smallCheckout(String branch) throws ClassNotFoundException, IOException {
         GlobalConfig.instance.graph.checkout(branch);
+        CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
+    }
+
+    static void smallCheckout(String branch, int commitId) throws ClassNotFoundException, IOException {
+        GlobalConfig.instance.graph.checkout(branch, commitId);
         CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
     }
 }
