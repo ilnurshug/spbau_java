@@ -24,16 +24,6 @@ public class VcsUtils {
     public static final String MERGE = "merge";
     public static final String STATUS = "status";
 
-    public static String getFileHash(String filename) throws IOException {
-        FileInputStream fis = new FileInputStream(new File(filename));
-
-        String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
-
-        fis.close();
-
-        return md5;
-    }
-
     public static <T> void serialize(T obj, String filename) throws IOException {
         File f = new File(filename);
         if (!f.exists()) {
@@ -117,5 +107,15 @@ public class VcsUtils {
         });
 
         return different;
+    }
+
+    private static String getFileHash(String filename) throws IOException {
+        FileInputStream fis = new FileInputStream(new File(filename));
+
+        String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
+
+        fis.close();
+
+        return md5;
     }
 }

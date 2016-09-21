@@ -1,7 +1,7 @@
 package vcs.commands;
 
 import com.beust.jcommander.Parameters;
-import vcs.CommitConfig;
+import vcs.config.CommitConfig;
 import vcs.util.VcsUtils;
 
 @Parameters(commandNames = VcsUtils.STATUS)

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
-public class CLI {
+public class VCS {
     private static HashMap<String, Command> cmd = new HashMap<>();
 
     private static final CommitCommand commit = new CommitCommand();
@@ -29,25 +29,13 @@ public class CLI {
     }
 
     public static void main(String[] args) {
+        String[] command = new String[args.length - 1];
+        System.arraycopy(args, 1, command, 0, args.length - 1);
 
-        /*
-            for testing purposes only
-         */
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                run(line.split(" "));  // problem with strings
-            }
-        }
-        catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-
+        run(command);
     }
 
-    private static void run(String[] args) {
+    public static void run(String... args) {
         final JCommander jc = new JCommander();
 
         jc.addCommand(commit);
@@ -64,7 +52,7 @@ public class CLI {
             Command c = cmd.getOrDefault(jc.getParsedCommand(), null);
             c.exec();
         } catch (Exception e) {
-            System.err.println("unknown command");
+            System.err.println("Unknown command. See usage");
             jc.usage();
         }
     }

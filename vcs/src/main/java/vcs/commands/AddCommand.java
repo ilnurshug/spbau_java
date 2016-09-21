@@ -2,7 +2,7 @@ package vcs.commands;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import vcs.CommitConfig;
+import vcs.config.CommitConfig;
 import vcs.util.VcsUtils;
 
 import java.io.File;

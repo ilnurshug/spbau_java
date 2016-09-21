@@ -1,7 +1,7 @@
 package vcs.commands;
 
-import vcs.CommitConfig;
-import vcs.GlobalConfig;
+import vcs.config.CommitConfig;
+import vcs.config.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.File;

@@ -1,4 +1,4 @@
-package vcs;
+package vcs.config;
 
 import vcs.util.VcsUtils;
 

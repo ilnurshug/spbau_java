@@ -2,15 +2,14 @@ package vcs.commands;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import vcs.CommitConfig;
-import vcs.GlobalConfig;
+import vcs.config.CommitConfig;
+import vcs.config.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.SynchronousQueue;
 import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
