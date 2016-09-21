@@ -4,6 +4,8 @@ package vcs.util;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,7 +67,7 @@ public class VcsUtils {
     }
 
     public static void copyFiles(List<String> files, String source, String dest, boolean overwrite) {
-        files = files.stream().filter(f->new File(source + f).exists()).collect(Collectors.toList());
+        files = files.stream().filter(f -> new File(source + f).exists()).collect(Collectors.toList());
 
         files.forEach(
                 f -> {
@@ -83,13 +85,24 @@ public class VcsUtils {
         );
     }
 
+    public static void deleteFiles(List<String> files, String dir) {
+        files.stream()
+                .filter(f -> new File(dir + f).exists())
+                .forEach(f -> {
+                    try {
+                        Files.delete(Paths.get(dir + f));
+                    } catch (IOException e) {
+                        VcsUtils.log("deletion failure");
+                    }
+                });
+    }
+
     public static long diffDirFiles(List<String> files, String dirA, String dirB) {
         return files.stream().filter(f -> {
             try {
                 return !VcsUtils.getFileHash(dirA + f).equals(VcsUtils.getFileHash(dirB + f));
             }
             catch (IOException e) {
-                VcsUtils.log("hashing failure");
                 return true;
             }
         }).count();

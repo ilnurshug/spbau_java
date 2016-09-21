@@ -47,11 +47,21 @@ public class CheckoutCommand extends Command {
         String dest = GlobalConfig.getProjectDir();
 
         try {
-            if (createBranch || id == -1) {
+            if (createBranch) {
                 smallCheckout(branch);
             }
             else {
-                smallCheckout(branch, id);
+                VcsUtils.deleteFiles(
+                        CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                        dest
+                );
+
+                if (id == -1) {
+                    smallCheckout(branch);
+                }
+                else {
+                    smallCheckout(branch, id);
+                }
             }
 
             VcsUtils.copyFiles(
