@@ -1,6 +1,8 @@
 package vcs.commands;
 
 import com.beust.jcommander.Parameters;
+import vcs.config.CommitConfig;
+import vcs.config.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.*;
@@ -11,20 +13,23 @@ import java.nio.file.Paths;
 public class InitCommand extends Command {
 
     /**
-     * init existing repository if .vcs directory is already exists
+     * init existing repository if vcs directory is already exists
      * or empty repository
      */
     @Override
     public void exec() {
-        File vcsFile = new File(VcsUtils.VCS_DIR);
+        File vcsFile = new File(VcsUtils.vcsDir());
 
         try {
             if (vcsFile.isDirectory()) {
                 deserializeTempConfig();
             }
             else {
-                Files.createDirectories(Paths.get(VcsUtils.VCS_DIR));
-                Files.createDirectories(Paths.get(VcsUtils.BRANCHES_DIR + "/master/0"));
+                GlobalConfig.instance = new GlobalConfig();
+                CommitConfig.instance = new CommitConfig();
+
+                Files.createDirectories(Paths.get(VcsUtils.vcsDir()));
+                Files.createDirectories(Paths.get(VcsUtils.branchesDir() + "/master/0"));
 
                 serializeTempConfig();
                 serializeConfig();

@@ -29,10 +29,11 @@ public class AddCommand extends Command {
 
         System.out.println("added files:");
         files = files.stream()
-                .filter(f -> new File(VcsUtils.PROJECT_DIR + "/" + f).exists())
+                .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
                 .collect(Collectors.toList());
 
         CommitConfig.instance.supervisedFiles.addAll(files);
+        files.forEach(System.out::println);
         System.out.println("---");
     }
 }

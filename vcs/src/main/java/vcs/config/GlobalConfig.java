@@ -9,19 +9,24 @@ import java.io.Serializable;
 public class GlobalConfig implements Serializable {
     public static GlobalConfig instance = new GlobalConfig();
 
-    private static final String projectDir = System.getProperty("user.dir");
+    private static String projectDir;
 
-    public CommitGraph graph = new CommitGraph();
+    public CommitGraph graph;
+
+    public GlobalConfig() {
+        projectDir = System.getProperty("user.dir");
+        graph = new CommitGraph();
+    }
 
     public static String getHeadCommitDir() {
         String branch = instance.graph.getHead().getBranch();
         int commitId = instance.graph.getHead().getId();
-        return VcsUtils.BRANCHES_DIR + "/" + branch + "/" + commitId + "/";
+        return VcsUtils.branchesDir() + "/" + branch + "/" + commitId + "/";
     }
 
     public static String getLastCommitDir(String branch) {
         int commitId = instance.graph.getLastCommitOnBranch(branch).getId();
-        return VcsUtils.BRANCHES_DIR + "/" + branch + "/" + commitId + "/";
+        return VcsUtils.branchesDir() + "/" + branch + "/" + commitId + "/";
     }
 
     public static String getProjectDir() {
@@ -30,7 +35,7 @@ public class GlobalConfig implements Serializable {
 
     public static void rollback() {
         try {
-            GlobalConfig.instance = (GlobalConfig) VcsUtils.deserialize(VcsUtils.GLOBAL_CONFIG_FILE);
+            GlobalConfig.instance = (GlobalConfig) VcsUtils.deserialize(VcsUtils.globalConfigFile());
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

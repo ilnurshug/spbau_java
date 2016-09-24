@@ -11,11 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class VcsUtils {
-    public static final String PROJECT_DIR = System.getProperty("user.dir");
-    public static final String VCS_DIR = PROJECT_DIR + "/.vcs";
-    public static final String GLOBAL_CONFIG_FILE = VCS_DIR + "/config";
-    public static final String BRANCHES_DIR = VCS_DIR + "/branches";
-
     public static final String COMMIT = "commit";
     public static final String ADD = "add";
     public static final String CHECKOUT = "checkout";
@@ -23,6 +18,22 @@ public class VcsUtils {
     public static final String INIT = "init";
     public static final String MERGE = "merge";
     public static final String STATUS = "status";
+
+    public static String projectDir() {
+        return System.getProperty("user.dir");
+    }
+
+    public static String vcsDir() {
+        return projectDir() + "/.vcs";
+    }
+
+    public static  String globalConfigFile() {
+        return vcsDir() + "/config";
+    }
+
+    public static String branchesDir() {
+        return vcsDir() + "/branches";
+    }
 
     public static <T> void serialize(T obj, String filename) throws IOException {
         File f = new File(filename);

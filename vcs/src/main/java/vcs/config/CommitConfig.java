@@ -9,13 +9,9 @@ import java.util.HashSet;
 public class CommitConfig implements Serializable {
     public static CommitConfig instance = new CommitConfig();
 
-    public HashSet<String> supervisedFiles = new HashSet<>();
+    public HashSet<String> supervisedFiles;
 
-    public static void rollback() {
-        try {
-            CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public CommitConfig() {
+        supervisedFiles = new HashSet<>();
     }
 }

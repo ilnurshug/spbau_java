@@ -83,7 +83,7 @@ public class CommitCommand extends Command implements Serializable {
     private void refreshSupervisedFilesList() {
         CommitConfig.instance.supervisedFiles = CommitConfig.instance.supervisedFiles
                 .stream()
-                .filter(f -> new File(VcsUtils.PROJECT_DIR + "/" + f).exists())
+                .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
                 .collect(Collectors.toCollection(HashSet::new));
     }
 }

@@ -17,7 +17,7 @@ public class LogCommand extends Command {
         Commit c = GlobalConfig.instance.graph.getHead();
         System.out.println("commit history of branch " + c.getBranch());
         while (c != null) {
-            System.out.println(c.getMessage());
+            System.out.println(c.getId() + ": " + c.getMessage());
 
             c = CommitGraph.getPrevCommit(c);
         }
