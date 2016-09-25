@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Parameters(commandNames = VcsUtils.COMMIT)
 public class CommitCommand extends Command implements Serializable {
@@ -47,9 +48,9 @@ public class CommitCommand extends Command implements Serializable {
         }
 
         if (VcsUtils.diffDirFiles(
-                CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                CommitConfig.instance.getSupervisedFiles(),
                 GlobalConfig.getProjectDir(),
-                GlobalConfig.getHeadCommitDir()) == 0)
+                GlobalConfig.getHeadCommitDir()) == 0 && !GlobalConfig.instance.graph.isCreateBranch())
         {
             System.out.println("nothing to commit");
             return;
@@ -66,7 +67,7 @@ public class CommitCommand extends Command implements Serializable {
             Files.createDirectories(Paths.get(dest));
 
             VcsUtils.copyFiles(
-                    CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                    CommitConfig.instance.getSupervisedFiles(),
                     source,
                     dest, true
             );
@@ -81,9 +82,12 @@ public class CommitCommand extends Command implements Serializable {
     }
 
     private void refreshSupervisedFilesList() {
-        CommitConfig.instance.supervisedFiles = CommitConfig.instance.supervisedFiles
+        Stream<String> s = CommitConfig.instance.getSupervisedFiles()
                 .stream()
-                .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
-                .collect(Collectors.toCollection(HashSet::new));
+                .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists());
+
+        CommitConfig.instance.clearSupervisedFilesList();
+
+        s.forEach(CommitConfig.instance::addSupervisedFile);
     }
 }

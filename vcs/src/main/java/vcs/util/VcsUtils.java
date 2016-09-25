@@ -18,6 +18,7 @@ public class VcsUtils {
     public static final String INIT = "init";
     public static final String MERGE = "merge";
     public static final String STATUS = "status";
+    public static final String BRANCH = "branch";
 
     public static String projectDir() {
         return System.getProperty("user.dir");

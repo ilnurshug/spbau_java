@@ -29,8 +29,12 @@ public class CommitGraph implements Serializable {
         return branches.getOrDefault(branch, null);
     }
 
+    public boolean isCreateBranch() {
+        return createBranch;
+    }
+
     public boolean merge(String branch) {
-        if (!branch.contains(branch)) {
+        if (!isContains(branch)) {
             System.err.println("no such branch");
             return false;
         }
@@ -55,7 +59,7 @@ public class CommitGraph implements Serializable {
     }
 
     public boolean createBranch(String branch) {
-        if (branch.contains(branch)) {
+        if (isContains(branch)) {
             System.err.println("branch already exists");
             return false;
         }
@@ -67,13 +71,17 @@ public class CommitGraph implements Serializable {
     }
 
     public boolean checkout(String branch) {
-        if (!branch.contains(branch)) {
+        if (!isContains(branch)) {
             System.err.println("no such branch");
             return false;
         }
 
         head = branches.get(branch);
         return true;
+    }
+
+    public boolean isContains(String branch) {
+        return branch.contains(branch);
     }
 
     public boolean checkout(String branch, int commitId) {

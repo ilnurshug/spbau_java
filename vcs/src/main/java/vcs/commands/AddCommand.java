@@ -25,14 +25,12 @@ public class AddCommand extends Command {
      */
     @Override
     protected void execImpl() {
-        // TODO:
-
         System.out.println("added files:");
         files = files.stream()
                 .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
                 .collect(Collectors.toList());
 
-        CommitConfig.instance.supervisedFiles.addAll(files);
+        files.forEach(CommitConfig.instance::addSupervisedFile);
         files.forEach(System.out::println);
         System.out.println("---");
     }

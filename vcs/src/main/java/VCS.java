@@ -17,6 +17,7 @@ public class VCS {
     private static final InitCommand init = new InitCommand();
     private static final MergeCommand merge = new MergeCommand();
     private static final StatusCommand status = new StatusCommand();
+    private static final BranchCommand branch = new BranchCommand();
 
     static {
         cmd.put(VcsUtils.COMMIT, commit);
@@ -26,6 +27,7 @@ public class VCS {
         cmd.put(VcsUtils.INIT, init);
         cmd.put(VcsUtils.MERGE, merge);
         cmd.put(VcsUtils.STATUS, status);
+        cmd.put(VcsUtils.BRANCH, branch);
     }
 
     public static void main(String[] args) {
@@ -45,6 +47,7 @@ public class VCS {
         jc.addCommand(init);
         jc.addCommand(merge);
         jc.addCommand(status);
+        jc.addCommand(branch);
 
         try {
             jc.parse(args);

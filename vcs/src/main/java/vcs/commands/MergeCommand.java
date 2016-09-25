@@ -90,7 +90,7 @@ public class MergeCommand extends Command {
         String commitDir = GlobalConfig.getHeadCommitDir();
 
         return VcsUtils.diffDirFiles(
-                CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                CommitConfig.instance.getSupervisedFiles(),
                 dir,
                 commitDir) > 0;
     }
@@ -98,11 +98,11 @@ public class MergeCommand extends Command {
     private List<String> getCommonFiles(String firstBranch, String secondBranch)
             throws ClassNotFoundException, IOException
     {
-        HashSet<String> commonFiles = new HashSet<>(CommitConfig.instance.supervisedFiles);
+        HashSet<String> commonFiles = new HashSet<>(CommitConfig.instance.getSupervisedFiles());
 
         CheckoutCommand.smallCheckout(secondBranch);
 
-        commonFiles.retainAll(CommitConfig.instance.supervisedFiles);
+        commonFiles.retainAll(CommitConfig.instance.getSupervisedFiles());
 
         CheckoutCommand.smallCheckout(firstBranch);
 
@@ -112,11 +112,11 @@ public class MergeCommand extends Command {
     private List<String> getUnionFiles(String firstBranch, String secondBranch)
             throws ClassNotFoundException, IOException
     {
-        HashSet<String> unionFiles = new HashSet<>(CommitConfig.instance.supervisedFiles);
+        HashSet<String> unionFiles = new HashSet<>(CommitConfig.instance.getSupervisedFiles());
 
         CheckoutCommand.smallCheckout(secondBranch);
 
-        unionFiles.addAll(CommitConfig.instance.supervisedFiles);
+        unionFiles.addAll(CommitConfig.instance.getSupervisedFiles());
 
         CheckoutCommand.smallCheckout(firstBranch);
 

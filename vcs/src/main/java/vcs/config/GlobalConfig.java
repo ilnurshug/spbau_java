@@ -32,12 +32,4 @@ public class GlobalConfig implements Serializable {
     public static String getProjectDir() {
         return projectDir + "/";
     }
-
-    public static void rollback() {
-        try {
-            GlobalConfig.instance = (GlobalConfig) VcsUtils.deserialize(VcsUtils.globalConfigFile());
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 }

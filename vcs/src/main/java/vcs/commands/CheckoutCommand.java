@@ -7,12 +7,9 @@ import vcs.config.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 @Parameters(commandNames = VcsUtils.CHECKOUT, commandDescription = "Go to selected commit or branch")
 public class CheckoutCommand extends Command {
-    @Parameter(names = "-new", description = "Create new branch")
-    private boolean createBranch = false;
 
     @Parameter(names = "-b", required = true, description = "choose branch to switch")
     private String branch;
@@ -27,19 +24,13 @@ public class CheckoutCommand extends Command {
         this.id = id;
     }
 
-    public CheckoutCommand(boolean createBranch, String branch) {
-        this.createBranch = createBranch;
-        this.branch = branch;
-    }
-
     /**
      * switch to selected branch
      * or to selected commit on specified branch
-     * or to newly created branch
      */
     @Override
     protected void execImpl() {
-        if (!canCheckout(createBranch, branch, id)) {
+        if (!canCheckout(branch, id)) {
             return;
         }
 
@@ -47,25 +38,20 @@ public class CheckoutCommand extends Command {
         String dest = GlobalConfig.getProjectDir();
 
         try {
-            if (createBranch) {
+            VcsUtils.deleteFiles(
+                    CommitConfig.instance.getSupervisedFiles(),
+                    dest
+            );
+
+            if (id == -1) {
                 smallCheckout(branch);
             }
             else {
-                VcsUtils.deleteFiles(
-                        CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
-                        dest
-                );
-
-                if (id == -1) {
-                    smallCheckout(branch);
-                }
-                else {
-                    smallCheckout(branch, id);
-                }
+                smallCheckout(branch, id);
             }
 
             VcsUtils.copyFiles(
-                    CommitConfig.instance.supervisedFiles.stream().collect(Collectors.toList()),
+                    CommitConfig.instance.getSupervisedFiles(),
                     source,
                     dest, true
             );
@@ -78,9 +64,9 @@ public class CheckoutCommand extends Command {
         }
     }
 
-    private boolean canCheckout(boolean createBranch, String branch, int commitId) {
-        if (createBranch) {
-            return GlobalConfig.instance.graph.createBranch(branch);
+    private boolean canCheckout(String branch, int commitId) {
+        if (CommitConfig.instance.isDeletedBranch(branch)) {
+            return false;
         }
         else {
             if (commitId == -1) {

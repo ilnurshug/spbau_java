@@ -13,7 +13,7 @@ public class StatusCommand extends Command {
     @Override
     public void exec() {
         System.out.println("Supervised files:");
-        CommitConfig.instance.supervisedFiles.forEach(System.out::println);
+        CommitConfig.instance.getSupervisedFiles().forEach(System.out::println);
         System.out.println("---");
     }
 

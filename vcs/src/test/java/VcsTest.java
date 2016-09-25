@@ -143,7 +143,7 @@ public class VcsTest {
             VCS.run("add", "a");
             VCS.run("commit", "-m", "first");
 
-            File b = folder.newFile("b");
+            folder.newFile("b");
 
             VCS.run("add", "b");
             VCS.run("commit", "-m", "second");
@@ -161,19 +161,19 @@ public class VcsTest {
         }
     }
 
-    protected String readFile(File f) throws IOException {
+    private String readFile(File f) throws IOException {
         return String.join("\n", Files.readLines(f, Charset.defaultCharset()));
     }
 
-    protected void checkSupervisedFilesList(String... files) {
+    private void checkSupervisedFilesList(String... files) {
         Arrays.sort(files);
-        assertArrayEquals(files, CommitConfig.instance.supervisedFiles.stream().sorted().toArray());
+        assertArrayEquals(files, CommitConfig.instance.getSupervisedFiles().stream().sorted().toArray());
     }
 
     /**
      * check whether all files contains in dir or not
      */
-    protected void assertFilesInDir(File dir, String... files) {
+    private void assertFilesInDir(File dir, String... files) {
         Object[] filesInDir = Arrays.stream(dir.listFiles())
                 .filter(Objects::nonNull)
                 .map(File::getName)
