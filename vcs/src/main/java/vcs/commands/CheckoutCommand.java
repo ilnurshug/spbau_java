@@ -14,7 +14,7 @@ public class CheckoutCommand extends Command {
     @Parameter(names = "-b", required = true, description = "choose branch to switch")
     private String branch;
 
-    @Parameter(names = "-commit", description = "commit id")
+    @Parameter(names = "-c", required = true, description = "commit id")
     private int id = -1;
 
     public CheckoutCommand() {}
@@ -66,6 +66,7 @@ public class CheckoutCommand extends Command {
 
     private boolean canCheckout(String branch, int commitId) {
         if (CommitConfig.instance.isDeletedBranch(branch)) {
+            System.err.println("can not switch to deleted branch");
             return false;
         }
         else {

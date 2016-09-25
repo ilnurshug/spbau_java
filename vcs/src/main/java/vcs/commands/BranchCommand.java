@@ -11,7 +11,7 @@ import java.io.IOException;
 @Parameters(commandNames = VcsUtils.BRANCH, commandDescription = "Create or delete selected branch")
 public class BranchCommand extends Command {
 
-    @Parameter(names = "-a", description = "Create(1) or delete(0) new branch")
+    @Parameter(names = "-a", required = true, description = "Create(1) or delete(0) new branch")
     private int action = 1;
 
     @Parameter(names = "-b", required = true, description = "choose branch to switch")
@@ -41,7 +41,7 @@ public class BranchCommand extends Command {
             try {
                 VcsUtils.serialize(GlobalConfig.instance, VcsUtils.globalConfigFile());
 
-                Command commit = new CommitCommand(null, "new branch " + branch + " was created");
+                Command commit = new CommitCommand("new branch " + branch + " was created");
                 commit.exec();
             } catch (IOException e) {
                 e.printStackTrace();

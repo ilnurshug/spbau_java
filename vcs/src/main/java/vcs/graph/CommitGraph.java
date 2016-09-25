@@ -81,7 +81,7 @@ public class CommitGraph implements Serializable {
     }
 
     public boolean isContains(String branch) {
-        return branch.contains(branch);
+        return branches.containsKey(branch);
     }
 
     public boolean checkout(String branch, int commitId) {

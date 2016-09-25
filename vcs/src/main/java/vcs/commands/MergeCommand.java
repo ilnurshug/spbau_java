@@ -15,9 +15,11 @@ import java.util.stream.Collectors;
 @Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
 public class MergeCommand extends Command {
     @Parameter(required = true, description = "Select branch")
-    private List<String> branches = new LinkedList<>();
+    private List<String> branches;
 
-    public MergeCommand() {}
+    public MergeCommand() {
+        branches = new LinkedList<>();
+    }
 
     public MergeCommand(String branch) {
         branches.add(branch);
@@ -42,19 +44,26 @@ public class MergeCommand extends Command {
         }
 
         try {
+            List<String> unionFiles = getUnionFiles(firstBranch, secondBranch);
+
             String firstDir = GlobalConfig.getLastCommitDir(firstBranch);
             String secondDir = GlobalConfig.getLastCommitDir(secondBranch);
 
             GlobalConfig.instance.graph.merge(secondBranch);
-
             String mergeDir = GlobalConfig.getHeadCommitDir();
-            List<String> unionFiles = getUnionFiles(firstBranch, secondBranch);
 
             VcsUtils.copyFiles(unionFiles, firstDir, mergeDir, true);
             VcsUtils.copyFiles(unionFiles, secondDir, mergeDir, false);
 
-            serializeConfig();
+            unionFiles.forEach(CommitConfig.instance::addSupervisedFile);
 
+            VcsUtils.copyFiles(
+                    CommitConfig.instance.getSupervisedFiles(),
+                    mergeDir,
+                    GlobalConfig.getProjectDir(), true
+            );
+
+            serializeConfig();
         } catch (ClassNotFoundException | IOException e) {
             System.err.println("merge failure");
             e.printStackTrace();

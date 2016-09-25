@@ -92,12 +92,12 @@ public class VcsTest {
             VCS.run("commit", "-m", "\"second commit\"");
             VCS.run("log");
 
-            VCS.run("checkout", "-b", "master", "-commit", "1");
+            VCS.run("checkout", "-b", "master", "-c", "1");
 
             System.out.println(readFile(a));
 
             VCS.run("log");
-            VCS.run("checkout", "-b", "master", "-commit", "2");
+            VCS.run("checkout", "-b", "master", "-c", "2");
 
             System.out.println(readFile(a));
 
@@ -124,11 +124,11 @@ public class VcsTest {
             VCS.run("commit", "-m", "second");
             checkSupervisedFilesList("a", "b");
 
-            VCS.run("checkout", "-b", "master", "-commit", "1");
+            VCS.run("checkout", "-b", "master", "-c", "1");
 
             checkSupervisedFilesList("a");
 
-            VCS.run("checkout", "-b", "master", "-commit", "2");
+            VCS.run("checkout", "-b", "master", "-c", "2");
 
             checkSupervisedFilesList("a", "b");
         }
@@ -140,6 +140,8 @@ public class VcsTest {
     @Test
     public void checkoutTest1() {
         try {
+            folder.newFile("c");
+
             VCS.run("add", "a");
             VCS.run("commit", "-m", "first");
 
@@ -148,17 +150,77 @@ public class VcsTest {
             VCS.run("add", "b");
             VCS.run("commit", "-m", "second");
 
-            VCS.run("checkout", "-b", "master", "-commit", "1");
+            VCS.run("checkout", "-b", "master", "-c", "1");
 
-            assertFilesInDir(folder.getRoot(), ".vcs", "a");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "c");
 
-            VCS.run("checkout", "-b", "master", "-commit", "2");
+            VCS.run("checkout", "-b", "master", "-c", "2");
 
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void checkoutTest2() {
+        try {
+            VCS.run("add", "a");
+            VCS.run("commit", "-m", "first");
+
+            folder.newFile("b");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "second");
+
+            folder.newFile("c");
+
+            VCS.run("branch", "-a", "1", "-b", "br");
+
+            VCS.run("add", "c");
+            VCS.run("commit", "-m", "first on br");
+
+            VCS.run("log");
+
+            VCS.run("checkout", "-b", "master", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b");
+
+            VCS.run("checkout", "-b", "br", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VCS.run("checkout", "-b", "master", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b");
+
+            folder.newFile("d");
+            VCS.run("add", "d");
+            VCS.run("commit", "-m", "third");
+
+            VCS.run("checkout", "-b", "br", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VCS.run("checkout", "-b", "master", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "d");
+
+            VCS.run("checkout", "-b", "master", "-c", "2");
             assertFilesInDir(folder.getRoot(), ".vcs", "a", "b");
         }
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void mergeTest() {
+        checkoutTest2();
+
+        VCS.run("checkout", "-b", "master", "-c", "-1");
+        assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "d");
+
+        VCS.run("merge", "br");
+        assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c", "d");
+
+        VCS.run("log");
     }
 
     private String readFile(File f) throws IOException {
