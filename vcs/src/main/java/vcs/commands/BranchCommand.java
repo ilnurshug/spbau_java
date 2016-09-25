@@ -28,11 +28,11 @@ public class BranchCommand extends Command {
     @Override
     protected void execImpl() {
         if (removeBranch() && GlobalConfig.instance.graph.isContains(branch)) {
-            if (GlobalConfig.instance.graph.getHead().getBranch().equals(branch)) {
+            if (GlobalConfig.getCurrentBranch().equals(branch)) {
                 System.err.println("can not delete current branch, please checkout to another branch");
             }
             else {
-                CommitConfig.instance.addDeletedBranch(branch);
+                GlobalConfig.instance.addDeletedBranch(branch);
             }
         }
         else if (createBranch()) {

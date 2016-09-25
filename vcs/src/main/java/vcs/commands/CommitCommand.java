@@ -10,9 +10,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Parameters(commandNames = VcsUtils.COMMIT)
@@ -25,13 +22,6 @@ public class CommitCommand extends Command implements Serializable {
 
     public CommitCommand(String message) {
         this.message = message;
-    }
-
-    /**
-     * @return commit message
-     */
-    public String getMessage() {
-        return message;
     }
 
     /**

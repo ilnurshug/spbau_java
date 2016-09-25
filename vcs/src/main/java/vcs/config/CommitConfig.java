@@ -1,8 +1,5 @@
 package vcs.config;
 
-import vcs.util.VcsUtils;
-
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -12,11 +9,9 @@ public class CommitConfig implements Serializable {
     public static CommitConfig instance = new CommitConfig();
 
     private HashSet<String> supervisedFiles;
-    private HashSet<String> deletedBranches;
 
     public CommitConfig() {
         supervisedFiles = new HashSet<>();
-        deletedBranches = new HashSet<>();
     }
 
     public List<String> getSupervisedFiles() {
@@ -29,13 +24,5 @@ public class CommitConfig implements Serializable {
 
     public void clearSupervisedFilesList() {
         supervisedFiles = new HashSet<>();
-    }
-
-    public boolean isDeletedBranch(String branch) {
-        return deletedBranches.contains(branch);
-    }
-
-    public void addDeletedBranch(String branch) {
-        deletedBranches.add(branch);
     }
 }

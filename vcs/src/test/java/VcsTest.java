@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import vcs.config.CommitConfig;
+import vcs.config.GlobalConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class VcsTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    public List<File> files;
+    private List<File> files;
 
     @Before
     public void before() {
@@ -221,6 +222,19 @@ public class VcsTest {
         assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c", "d");
 
         VCS.run("log");
+    }
+
+    @Test
+    public void branchTest() {
+        checkoutTest2();
+
+        VCS.run("checkout", "-b", "master", "-c", "-1");
+        assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "d");
+
+        VCS.run("branch", "-a", "0", "-b", "br");
+        assertEquals(GlobalConfig.getCurrentBranch(), "master");
+        VCS.run("checkout", "-b", "br", "-c", "-1");
+        assertEquals(GlobalConfig.getCurrentBranch(), "master");
     }
 
     private String readFile(File f) throws IOException {

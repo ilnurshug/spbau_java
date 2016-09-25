@@ -36,7 +36,7 @@ public class MergeCommand extends Command {
             return;
         }
 
-        String firstBranch = GlobalConfig.instance.graph.getHead().getBranch();
+        String firstBranch = GlobalConfig.getCurrentBranch();
         String secondBranch = branches.get(0);
 
         if (!canMerge(firstBranch, secondBranch)) {
@@ -71,6 +71,11 @@ public class MergeCommand extends Command {
     }
 
     private boolean canMerge(String firstBranch, String secondBranch) {
+        if (GlobalConfig.instance.isDeletedBranch(firstBranch) || GlobalConfig.instance.isDeletedBranch(secondBranch)) {
+            System.err.println("can not merge with deleted branch");
+            return false;
+        }
+
         try {
             List<String> commonFiles = getCommonFiles(firstBranch, secondBranch);
 

@@ -65,7 +65,7 @@ public class CheckoutCommand extends Command {
     }
 
     private boolean canCheckout(String branch, int commitId) {
-        if (CommitConfig.instance.isDeletedBranch(branch)) {
+        if (GlobalConfig.instance.isDeletedBranch(branch)) {
             System.err.println("can not switch to deleted branch");
             return false;
         }
