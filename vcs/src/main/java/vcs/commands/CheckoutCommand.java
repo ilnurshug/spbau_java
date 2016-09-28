@@ -4,9 +4,12 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import vcs.config.CommitConfig;
 import vcs.config.GlobalConfig;
+import vcs.graph.Commit;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Parameters(commandNames = VcsUtils.CHECKOUT, commandDescription = "Go to selected commit or branch")
 public class CheckoutCommand extends Command {
@@ -31,35 +34,31 @@ public class CheckoutCommand extends Command {
     @Override
     protected void execImpl() {
         if (!canCheckout(branch, id)) {
+            System.err.println("can not checkout");
             return;
         }
 
-        String source = GlobalConfig.getHeadCommitDir();
-        String dest = GlobalConfig.getProjectDir();
+        Commit headCommit = GlobalConfig.instance.graph.getHead();
+        Commit destCommit = GlobalConfig.instance.graph.getCommit(branch, id);
+
+        List<Commit> path = GlobalConfig.instance.graph.path(headCommit, destCommit);
+
+        path.remove(0);
 
         try {
-            VcsUtils.deleteFiles(
-                    CommitConfig.instance.getSupervisedFiles(),
-                    dest
-            );
-
-            if (id == -1) {
-                smallCheckout(branch);
+            Commit currentCommit = headCommit;
+            for (Commit c : path) {
+                if (currentCommit.getParents().contains(c)) {
+                    checkoutToPrevCommit(currentCommit, c);
+                }
+                else if (currentCommit.getChildren().contains(c)) {
+                    checkoutToNextCommit(currentCommit, c);
+                }
+                currentCommit = c;
             }
-            else {
-                smallCheckout(branch, id);
-            }
-
-            VcsUtils.copyFiles(
-                    CommitConfig.instance.getSupervisedFiles(),
-                    source,
-                    dest, true
-            );
 
             serializeConfig();
-        } catch (Exception e) {
-            /*GlobalConfig.rollback();
-            CommitConfig.rollback();*/
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -71,10 +70,10 @@ public class CheckoutCommand extends Command {
         }
         else {
             if (commitId == -1) {
-                return GlobalConfig.instance.graph.checkout(branch);
+                return GlobalConfig.instance.graph.isContains(branch);
             }
             else {
-                return GlobalConfig.instance.graph.checkout(branch, commitId);
+                return GlobalConfig.instance.graph.canCheckout(branch, commitId);
             }
         }
     }
@@ -87,5 +86,50 @@ public class CheckoutCommand extends Command {
     static void smallCheckout(String branch, int commitId) throws ClassNotFoundException, IOException {
         GlobalConfig.instance.graph.checkout(branch, commitId);
         CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + "config");
+    }
+
+    private void checkoutToPrevCommit(Commit cur, Commit prev) throws ClassNotFoundException, IOException {
+        List<String> sf = CommitConfig.instance.getSupervisedFiles();
+
+        smallCheckout(prev.getBranch(), prev.getId());
+
+        sf.stream()
+                .filter(f -> !CommitConfig.instance.isSupervised(f))
+                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.getProjectDir()));
+
+        CommitConfig.instance.getSupervisedFiles().stream()
+                .filter(f -> {
+                    try {
+                        String a = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + f);
+                        String b = CommitConfig.instance.getSupervisedFileHash(f);
+                        return !a.equals(b);
+                    } catch (IOException e) {
+                        return true;
+                    }
+                })
+                .forEach(f -> {
+                    VcsUtils.copyFiles(
+                            Collections.singletonList(f),
+                            CommitConfig.instance.getSupervisedFileCopyAddr(f),
+                            GlobalConfig.getProjectDir(),
+                            true);
+                });
+    }
+
+    private void checkoutToNextCommit(Commit cur, Commit next) throws ClassNotFoundException, IOException {
+        List<String> sf = CommitConfig.instance.getSupervisedFiles();
+
+        smallCheckout(next.getBranch(), next.getId());
+        String commitDir = GlobalConfig.getHeadCommitDir();
+
+        sf.stream()
+                .filter(f -> !CommitConfig.instance.isSupervised(f))
+                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.getProjectDir()));
+
+        VcsUtils.copyFiles(
+                CommitConfig.instance.getSupervisedFiles(),
+                commitDir,
+                GlobalConfig.getProjectDir(),
+                true);
     }
 }

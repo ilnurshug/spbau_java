@@ -121,7 +121,7 @@ public class VcsUtils {
         return different;
     }
 
-    private static String getFileHash(String filename) throws IOException {
+    public static String getFileHash(String filename) throws IOException {
         FileInputStream fis = new FileInputStream(new File(filename));
 
         String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);

@@ -6,6 +6,7 @@ import vcs.config.CommitConfig;
 import vcs.util.VcsUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,15 @@ public class AddCommand extends Command {
                 .collect(Collectors.toList());
 
         files.forEach(CommitConfig.instance::addSupervisedFile);
+
+        files.forEach(f -> {
+            try {
+                CommitConfig.instance.addSupervisedFileHash(f, VcsUtils.getFileHash(VcsUtils.projectDir() + "/" + f));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         files.forEach(System.out::println);
         System.out.println("---");
     }

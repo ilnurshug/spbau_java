@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import vcs.config.CommitConfig;
 import vcs.config.GlobalConfig;
+import vcs.util.VcsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,11 +47,44 @@ public class VcsTest {
     }
 
     @Test
+    public void checkoutTest3() {
+        VCS.run("add", "a");
+        VCS.run("commit", "-m", "\"first commit\"");
+
+        try {
+            folder.newFile("b");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "\"second commit\"");
+
+            folder.newFile("c");
+
+            VCS.run("add", "c");
+            VCS.run("commit", "-m", "\"third commit\"");
+
+            VCS.run("checkout", "-b", "master", "-c", "1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a");
+
+            VCS.run("checkout", "-b", "master", "-c", "3");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VcsUtils.deleteFiles(Collections.singletonList("a"), folder.getRoot().getAbsolutePath() + "/");
+            VCS.run("commit", "-m", "\"forth commit\"");
+
+            VCS.run("checkout", "-b", "master", "-c", "3");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VCS.run("checkout", "-b", "master", "-c", "4");
+            assertFilesInDir(folder.getRoot(), ".vcs", "b", "c");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void simpleTest() {
         String expected = "added files:\n" +
-                "a\n" +
-                "---\n" +
-                "Supervised files:\n" +
                 "a\n" +
                 "---\n" +
                 "successful commit\n" +
@@ -81,7 +115,6 @@ public class VcsTest {
             System.setOut(new PrintStream(out));
 
             VCS.run("add", "a");
-            VCS.run("status");
             VCS.run("commit", "-m", "\"first commit\"");
             VCS.run("log");
 
@@ -251,7 +284,6 @@ public class VcsTest {
      */
     private void assertFilesInDir(File dir, String... files) {
         Object[] filesInDir = Arrays.stream(dir.listFiles())
-                .filter(Objects::nonNull)
                 .map(File::getName)
                 .sorted()
                 .collect(Collectors.toList()).toArray();
