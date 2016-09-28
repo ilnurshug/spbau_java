@@ -251,7 +251,7 @@ public class VcsTest {
         VCS.run("checkout", "-b", "master", "-c", "-1");
         assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "d");
 
-        VCS.run("merge", "br");
+        VCS.run("merge", "-b", "br");
         assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c", "d");
 
         VCS.run("log");

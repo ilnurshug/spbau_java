@@ -1,5 +1,8 @@
 package vcs.config;
 
+import vcs.util.VcsUtils;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +55,20 @@ public class CommitConfig implements Serializable {
     public void clearSupervisedFilesList() {
         supervisedFiles = new HashSet<>();
         supervisedFilesHashes = new HashMap<>();
+    }
+
+    public List<String> differentFiles() {
+        return getSupervisedFiles().stream().filter(f -> {
+            try {
+                String current = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + f);
+                String old = getSupervisedFileHash(f);
+
+                return !current.equals(old) || getSupervisedFileCopyAddr(f) == null;
+            }
+            catch (IOException e) {
+                return true;
+            }
+        }).collect(Collectors.toList());
     }
 
     /*

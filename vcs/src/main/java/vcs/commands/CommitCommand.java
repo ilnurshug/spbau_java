@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Parameters(commandNames = VcsUtils.COMMIT)
 public class CommitCommand extends Command implements Serializable {
@@ -37,7 +36,7 @@ public class CommitCommand extends Command implements Serializable {
             return;
         }
 
-        List<String> diff = differentFiles();
+        List<String> diff = CommitConfig.instance.differentFiles();
         if (diff.isEmpty() && !GlobalConfig.instance.graph.isCreateBranch()) {
             System.out.println("nothing to commit");
             return;
@@ -73,20 +72,6 @@ public class CommitCommand extends Command implements Serializable {
 
             e.printStackTrace();
         }
-    }
-
-    private List<String> differentFiles() {
-        return CommitConfig.instance.getSupervisedFiles().stream().filter(f -> {
-            try {
-                String current = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + f);
-                String old = CommitConfig.instance.getSupervisedFileHash(f);
-
-                return !current.equals(old) || CommitConfig.instance.getSupervisedFileCopyAddr(f) == null;
-            }
-            catch (IOException e) {
-                return true;
-            }
-        }).collect(Collectors.toList());
     }
 
     private void refreshSupervisedFilesList() {

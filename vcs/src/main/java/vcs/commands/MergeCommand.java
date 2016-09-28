@@ -7,22 +7,21 @@ import vcs.config.GlobalConfig;
 import vcs.util.VcsUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
 public class MergeCommand extends Command {
-    @Parameter(required = true, description = "Select branch")
-    private List<String> branches;
+    @Parameter(names = "-b", required = true, description = "Select branch")
+    private String branch;
 
     public MergeCommand() {
-        branches = new LinkedList<>();
+        branch = null;
     }
 
     public MergeCommand(String branch) {
-        branches.add(branch);
+        this.branch = branch;
     }
 
     /**
@@ -37,31 +36,37 @@ public class MergeCommand extends Command {
         }
 
         String firstBranch = GlobalConfig.getCurrentBranch();
-        String secondBranch = branches.get(0);
+        String secondBranch = branch;
 
         if (!canMerge(firstBranch, secondBranch)) {
             return;
         }
 
         try {
-            List<String> unionFiles = getUnionFiles(firstBranch, secondBranch);
-
-            String firstDir = GlobalConfig.getLastCommitDir(firstBranch);
-            String secondDir = GlobalConfig.getLastCommitDir(secondBranch);
+            HashMap<String, String> unionFiles = getUnionFiles(firstBranch, secondBranch);
+            HashMap<String, String> onlyInSecond = getFilesThatPresentOnlyInSecondBranch(firstBranch, secondBranch);
 
             GlobalConfig.instance.graph.merge(secondBranch);
             String mergeDir = GlobalConfig.getHeadCommitDir();
+            Files.createDirectories(Paths.get(mergeDir));
 
-            VcsUtils.copyFiles(unionFiles, firstDir, mergeDir, true);
-            VcsUtils.copyFiles(unionFiles, secondDir, mergeDir, false);
+            unionFiles.forEach((f, h) -> CommitConfig.instance.addSupervisedFile(f));
 
-            unionFiles.forEach(CommitConfig.instance::addSupervisedFile);
+            for (Map.Entry<String, String> entry : onlyInSecond.entrySet()) {
+                String filename = entry.getKey();
+                String fileCopyAddress = entry.getValue();
 
-            VcsUtils.copyFiles(
-                    CommitConfig.instance.getSupervisedFiles(),
-                    mergeDir,
-                    GlobalConfig.getProjectDir(), true
-            );
+                VcsUtils.copyFiles(
+                        Collections.singletonList(filename),
+                        fileCopyAddress,
+                        GlobalConfig.getProjectDir(), true
+                );
+
+                CommitConfig.instance.setSupervisedFileCopyAddr(filename, fileCopyAddress);
+
+                String hash = unionFiles.get(filename);
+                CommitConfig.instance.addSupervisedFileHash(filename, hash);
+            }
 
             serializeConfig();
         } catch (ClassNotFoundException | IOException e) {
@@ -77,14 +82,18 @@ public class MergeCommand extends Command {
         }
 
         try {
-            List<String> commonFiles = getCommonFiles(firstBranch, secondBranch);
+            HashMap<String, String> commonFiles = getCommonFiles(firstBranch, secondBranch);
 
-            List<String> differentFiles = VcsUtils.diffDirFilesList(
-                    commonFiles,
-                    GlobalConfig.getLastCommitDir(firstBranch),
-                    GlobalConfig.getLastCommitDir(secondBranch));
+            List<String> differentFiles = new LinkedList<>();
+            for (Map.Entry<String, String> entry : commonFiles.entrySet()) {
+                String fileHash = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + entry.getKey());
 
-            if (differentFiles.size() > 0)
+                if (!entry.getValue().equals(fileHash)) {
+                    differentFiles.add(entry.getKey());
+                }
+            }
+
+            if (!differentFiles.isEmpty())
             {
                 System.out.println("merge conflict detected in following files:");
                 differentFiles.forEach(System.out::println);
@@ -100,40 +109,65 @@ public class MergeCommand extends Command {
     }
 
     private boolean needToCommitBeforeMerge() {
-        String dir = GlobalConfig.getProjectDir();
-        String commitDir = GlobalConfig.getHeadCommitDir();
-
-        return VcsUtils.diffDirFiles(
-                CommitConfig.instance.getSupervisedFiles(),
-                dir,
-                commitDir) > 0;
+        return !CommitConfig.instance.differentFiles().isEmpty();
     }
 
-    private List<String> getCommonFiles(String firstBranch, String secondBranch)
+    private HashMap<String, String> getCommonFiles(String firstBranch, String secondBranch)
             throws ClassNotFoundException, IOException
     {
+        HashMap<String, String> fh = new HashMap<>();
+
         HashSet<String> commonFiles = new HashSet<>(CommitConfig.instance.getSupervisedFiles());
 
         CheckoutCommand.smallCheckout(secondBranch);
 
         commonFiles.retainAll(CommitConfig.instance.getSupervisedFiles());
 
+        commonFiles.forEach(f -> fh.put(f, CommitConfig.instance.getSupervisedFileHash(f)));
+
         CheckoutCommand.smallCheckout(firstBranch);
 
-        return commonFiles.stream().collect(Collectors.toList());
+        return fh;
     }
 
-    private List<String> getUnionFiles(String firstBranch, String secondBranch)
+    private HashMap<String, String> getFilesThatPresentOnlyInSecondBranch(String firstBranch, String secondBranch)
             throws ClassNotFoundException, IOException
     {
+        HashSet<String> files = new HashSet<>(CommitConfig.instance.getSupervisedFiles());
+
+        CheckoutCommand.smallCheckout(secondBranch);
+
+        HashSet<String> tmp = new HashSet<>();
+        tmp.addAll(CommitConfig.instance.getSupervisedFiles());
+        tmp.removeAll(files);
+
+        HashMap<String, String> res = new HashMap<>();
+        tmp.forEach(f -> res.put(f, CommitConfig.instance.getSupervisedFileCopyAddr(f)));
+
+        CheckoutCommand.smallCheckout(firstBranch);
+
+        return res;
+    }
+
+    private HashMap<String, String> getUnionFiles(String firstBranch, String secondBranch)
+            throws ClassNotFoundException, IOException
+    {
+        HashMap<String, String> res = new HashMap<>();
+
         HashSet<String> unionFiles = new HashSet<>(CommitConfig.instance.getSupervisedFiles());
+        unionFiles.forEach(f -> res.put(f, CommitConfig.instance.getSupervisedFileHash(f)));
 
         CheckoutCommand.smallCheckout(secondBranch);
 
         unionFiles.addAll(CommitConfig.instance.getSupervisedFiles());
+        unionFiles.forEach(f -> {
+            if (!res.containsKey(f)) {
+                res.put(f, CommitConfig.instance.getSupervisedFileHash(f));
+            }
+        });
 
         CheckoutCommand.smallCheckout(firstBranch);
 
-        return unionFiles.stream().collect(Collectors.toList());
+        return res;
     }
 }
