@@ -22,7 +22,8 @@ public class VCS {
             new MergeCommand(),
             new StatusCommand(),
             new BranchCommand(),
-            new CleanCommand()
+            new CleanCommand(),
+            new RmCommand()
     );
 
     static {

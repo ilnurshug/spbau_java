@@ -303,6 +303,37 @@ public class VcsTest {
 
     }
 
+    @Test
+    public void rmTest() {
+        VCS.run("add", "a");
+        VCS.run("commit", "-m", "first");
+
+        assertFilesInDir(folder.getRoot(), ".vcs", "a");
+
+        try {
+            folder.newFile("b");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "second");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b");
+
+            VCS.run("rm", "-f", "a");
+
+            VCS.run("commit", "-m", "third");
+
+            assertFilesInDir(folder.getRoot(), ".vcs", "b");
+
+            VCS.run("checkout", "-b", "master", "-c", "1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a");
+
+            VCS.run("checkout", "-b", "master", "-c", "-1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "b");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private String readFile(File f) throws IOException {
         return String.join("\n", Files.readLines(f, Charset.defaultCharset()));
     }
