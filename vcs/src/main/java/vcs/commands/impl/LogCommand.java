@@ -1,6 +1,7 @@
-package vcs.commands;
+package vcs.commands.impl;
 
 import com.beust.jcommander.Parameters;
+import vcs.commands.Command;
 import vcs.config.GlobalConfig;
 import vcs.graph.Commit;
 import vcs.graph.CommitGraph;

@@ -37,19 +37,19 @@ public abstract class Command {
 
     public abstract String name();
 
-    static void serializeTempConfig() throws IOException {
+    protected static void serializeTempConfig() throws IOException {
         serialize("config_tmp");
     }
 
-    static void serializeConfig() throws IOException {
+    protected static void serializeConfig() throws IOException {
         serialize("config");
     }
 
-    static void deserializeTempConfig() throws IOException, ClassNotFoundException {
+    protected static void deserializeTempConfig() throws IOException, ClassNotFoundException {
         deserialize("config_tmp");
     }
 
-    static void deserializeConfig() throws IOException, ClassNotFoundException {
+    protected static void deserializeConfig() throws IOException, ClassNotFoundException {
         deserialize("config");
     }
 

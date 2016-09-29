@@ -1,13 +1,8 @@
 import com.beust.jcommander.JCommander;
 import vcs.commands.*;
-import vcs.util.VcsUtils;
+import vcs.commands.impl.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class VCS {
