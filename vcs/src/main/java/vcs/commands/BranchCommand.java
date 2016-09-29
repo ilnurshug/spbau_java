@@ -8,7 +8,6 @@ import vcs.util.VcsUtils;
 
 import java.io.IOException;
 
-@Parameters(commandNames = VcsUtils.BRANCH, commandDescription = "Create or delete selected branch")
 public class BranchCommand extends Command {
 
     @Parameter(names = "-a", required = true, description = "Create(1) or delete(0) new branch")
@@ -26,6 +25,11 @@ public class BranchCommand extends Command {
     }
 
     @Override
+    public String name() {
+        return "branch";
+    }
+
+    @Override
     protected void execImpl() {
         if (removeBranch() && GlobalConfig.instance.graph.isContains(branch)) {
             if (GlobalConfig.getCurrentBranch().equals(branch)) {
@@ -39,7 +43,7 @@ public class BranchCommand extends Command {
             GlobalConfig.instance.graph.createBranch(branch);
 
             try {
-                VcsUtils.serialize(GlobalConfig.instance, VcsUtils.globalConfigFile());
+                VcsUtils.serialize(GlobalConfig.instance, GlobalConfig.globalConfigFile());
 
                 Command commit = new CommitCommand("new branch " + branch + " was created");
                 commit.exec();

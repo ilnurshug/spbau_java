@@ -4,8 +4,12 @@ import com.beust.jcommander.Parameters;
 import vcs.config.CommitConfig;
 import vcs.util.VcsUtils;
 
-@Parameters(commandNames = VcsUtils.STATUS)
 public class StatusCommand extends Command {
+
+    @Override
+    public String name() {
+        return "status";
+    }
 
     /**
      * list of all supervised files

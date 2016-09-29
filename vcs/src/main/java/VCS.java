@@ -5,31 +5,28 @@ import vcs.util.VcsUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class VCS {
-    private static HashMap<String, Command> cmd = new HashMap<>();
+    private static CommandFactory factory = new CommandFactory();
 
-    private static final CommitCommand commit = new CommitCommand();
-    private static final AddCommand add = new AddCommand();
-    private static final CheckoutCommand checkout = new CheckoutCommand();
-    private static final LogCommand log = new LogCommand();
-    private static final InitCommand init = new InitCommand();
-    private static final MergeCommand merge = new MergeCommand();
-    private static final StatusCommand status = new StatusCommand();
-    private static final BranchCommand branch = new BranchCommand();
-    private static final CleanCommand clean = new CleanCommand();
+    private static final List<Command> commands = Arrays.asList(
+            new CommitCommand(),
+            new AddCommand(),
+            new CheckoutCommand(),
+            new LogCommand(),
+            new InitCommand(),
+            new MergeCommand(),
+            new StatusCommand(),
+            new BranchCommand(),
+            new CleanCommand()
+    );
 
     static {
-        cmd.put(VcsUtils.COMMIT, commit);
-        cmd.put(VcsUtils.ADD, add);
-        cmd.put(VcsUtils.CHECKOUT, checkout);
-        cmd.put(VcsUtils.LOG, log);
-        cmd.put(VcsUtils.INIT, init);
-        cmd.put(VcsUtils.MERGE, merge);
-        cmd.put(VcsUtils.STATUS, status);
-        cmd.put(VcsUtils.BRANCH, branch);
-        cmd.put(VcsUtils.CLEAN, clean);
+        commands.forEach(factory::registerCommand);
     }
 
     public static void main(String[] args) {
@@ -42,20 +39,12 @@ public class VCS {
     public static void run(String... args) {
         final JCommander jc = new JCommander();
 
-        jc.addCommand(commit);
-        jc.addCommand(add);
-        jc.addCommand(checkout);
-        jc.addCommand(log);
-        jc.addCommand(init);
-        jc.addCommand(merge);
-        jc.addCommand(status);
-        jc.addCommand(branch);
-        jc.addCommand(clean);
+        commands.forEach(c -> jc.addCommand(c.name(), c));
 
         try {
             jc.parse(args);
 
-            Command c = cmd.getOrDefault(jc.getParsedCommand(), null);
+            Command c = factory.getCommand(jc.getParsedCommand());
             c.exec();
         } catch (Exception e) {
             System.err.println("Unknown command. See usage");

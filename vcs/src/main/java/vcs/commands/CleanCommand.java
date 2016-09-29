@@ -7,17 +7,20 @@ import vcs.util.VcsUtils;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Parameters(commandNames = VcsUtils.CLEAN)
 public class CleanCommand extends Command {
+    @Override
+    public String name() {
+        return "clean";
+    }
+
     @Override
     protected void execImpl() {
         List<File> files = new LinkedList<>();
-        files.addAll(Arrays.asList(new File(GlobalConfig.getProjectDir()).listFiles()));
+        files.addAll(Arrays.asList(new File(GlobalConfig.projectDir()).listFiles()));
 
         VcsUtils.deleteFiles(
                 files.stream()
@@ -25,7 +28,7 @@ public class CleanCommand extends Command {
                         .map(File::getName)
                         .filter(f -> !CommitConfig.instance.isSupervised(f))
                         .collect(Collectors.toList()),
-                GlobalConfig.getProjectDir()
+                GlobalConfig.projectDir()
         );
 
     }

@@ -21,6 +21,22 @@ public class GlobalConfig implements Serializable {
         deletedBranches = new HashSet<>();
     }
 
+    public static String projectDir() {
+        return projectDir + "/";
+    }
+
+    public static String vcsDir() {
+        return projectDir() + ".vcs";
+    }
+
+    public static  String globalConfigFile() {
+        return vcsDir() + "/config";
+    }
+
+    public static String branchesDir() {
+        return vcsDir() + "/branches";
+    }
+
     public static String getCurrentBranch() {
         return instance.graph.getHead().getBranch();
     }
@@ -28,16 +44,12 @@ public class GlobalConfig implements Serializable {
     public static String getHeadCommitDir() {
         String branch = getCurrentBranch();
         int commitId = instance.graph.getHead().getId();
-        return VcsUtils.branchesDir() + "/" + branch + "/" + commitId + "/";
+        return branchesDir() + "/" + branch + "/" + commitId + "/";
     }
 
     public static String getLastCommitDir(String branch) {
         int commitId = instance.graph.getLastCommitOnBranch(branch).getId();
-        return VcsUtils.branchesDir() + "/" + branch + "/" + commitId + "/";
-    }
-
-    public static String getProjectDir() {
-        return projectDir + "/";
+        return branchesDir() + "/" + branch + "/" + commitId + "/";
     }
 
     public boolean isDeletedBranch(String branch) {

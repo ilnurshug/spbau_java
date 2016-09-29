@@ -9,8 +9,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-@Parameters(commandNames = VcsUtils.INIT, commandDescription = "InitCommand repository in current folder")
 public class InitCommand extends Command {
+
+    @Override
+    public String name() {
+        return "init";
+    }
 
     /**
      * init existing repository if vcs directory is already exists
@@ -18,7 +22,7 @@ public class InitCommand extends Command {
      */
     @Override
     public void exec() {
-        File vcsFile = new File(VcsUtils.vcsDir());
+        File vcsFile = new File(GlobalConfig.vcsDir());
 
         try {
             if (vcsFile.isDirectory()) {
@@ -28,8 +32,8 @@ public class InitCommand extends Command {
                 GlobalConfig.instance = new GlobalConfig();
                 CommitConfig.instance = new CommitConfig();
 
-                Files.createDirectories(Paths.get(VcsUtils.vcsDir()));
-                Files.createDirectories(Paths.get(VcsUtils.branchesDir() + "/master/0"));
+                Files.createDirectories(Paths.get(GlobalConfig.vcsDir()));
+                Files.createDirectories(Paths.get(GlobalConfig.branchesDir() + "/master/0"));
 
                 serializeTempConfig();
                 serializeConfig();

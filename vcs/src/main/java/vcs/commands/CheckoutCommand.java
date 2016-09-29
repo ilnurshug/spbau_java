@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-@Parameters(commandNames = VcsUtils.CHECKOUT, commandDescription = "Go to selected commit or branch")
 public class CheckoutCommand extends Command {
 
     @Parameter(names = "-b", required = true, description = "choose branch to switch")
@@ -25,6 +24,11 @@ public class CheckoutCommand extends Command {
     public CheckoutCommand(String branch, int id) {
         this.branch = branch;
         this.id = id;
+    }
+
+    @Override
+    public String name() {
+        return "checkout";
     }
 
     /**
@@ -95,12 +99,12 @@ public class CheckoutCommand extends Command {
 
         sf.stream()
                 .filter(f -> !CommitConfig.instance.isSupervised(f))
-                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.getProjectDir()));
+                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.projectDir()));
 
         CommitConfig.instance.getSupervisedFiles().stream()
                 .filter(f -> {
                     try {
-                        String a = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + f);
+                        String a = VcsUtils.getFileHash(GlobalConfig.projectDir() + f);
                         String b = CommitConfig.instance.getSupervisedFileHash(f);
                         return !a.equals(b);
                     } catch (IOException e) {
@@ -111,7 +115,7 @@ public class CheckoutCommand extends Command {
                     VcsUtils.copyFiles(
                             Collections.singletonList(f),
                             CommitConfig.instance.getSupervisedFileCopyAddr(f),
-                            GlobalConfig.getProjectDir(),
+                            GlobalConfig.projectDir(),
                             true);
                 });
     }
@@ -124,12 +128,12 @@ public class CheckoutCommand extends Command {
 
         sf.stream()
                 .filter(f -> !CommitConfig.instance.isSupervised(f))
-                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.getProjectDir()));
+                .forEach(f -> VcsUtils.deleteFiles(Collections.singletonList(f), GlobalConfig.projectDir()));
 
         VcsUtils.copyFiles(
                 CommitConfig.instance.getSupervisedFiles(),
                 commitDir,
-                GlobalConfig.getProjectDir(),
+                GlobalConfig.projectDir(),
                 true);
     }
 }

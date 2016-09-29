@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Parameters(commandNames = VcsUtils.MERGE, commandDescription = "Merge current branch with selected one")
 public class MergeCommand extends Command {
     @Parameter(names = "-b", required = true, description = "Select branch")
     private String branch;
@@ -22,6 +21,11 @@ public class MergeCommand extends Command {
 
     public MergeCommand(String branch) {
         this.branch = branch;
+    }
+
+    @Override
+    public String name() {
+        return "merge";
     }
 
     /**
@@ -59,7 +63,7 @@ public class MergeCommand extends Command {
                 VcsUtils.copyFiles(
                         Collections.singletonList(filename),
                         fileCopyAddress,
-                        GlobalConfig.getProjectDir(), true
+                        GlobalConfig.projectDir(), true
                 );
 
                 CommitConfig.instance.setSupervisedFileCopyAddr(filename, fileCopyAddress);
@@ -86,7 +90,7 @@ public class MergeCommand extends Command {
 
             List<String> differentFiles = new LinkedList<>();
             for (Map.Entry<String, String> entry : commonFiles.entrySet()) {
-                String fileHash = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + entry.getKey());
+                String fileHash = VcsUtils.getFileHash(GlobalConfig.projectDir() + entry.getKey());
 
                 if (!entry.getValue().equals(fileHash)) {
                     differentFiles.add(entry.getKey());

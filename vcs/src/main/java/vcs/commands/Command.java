@@ -13,7 +13,7 @@ public abstract class Command {
      * execute command, and serialize result of execution
      */
     public void exec() {
-        File vcsFile = new File(VcsUtils.vcsDir());
+        File vcsFile = new File(GlobalConfig.vcsDir());
 
         try {
             if (vcsFile.isDirectory()) {
@@ -35,6 +35,8 @@ public abstract class Command {
 
     protected abstract void execImpl();
 
+    public abstract String name();
+
     static void serializeTempConfig() throws IOException {
         serialize("config_tmp");
     }
@@ -52,12 +54,12 @@ public abstract class Command {
     }
 
     private static void serialize(String configFile) throws IOException {
-        VcsUtils.serialize(GlobalConfig.instance, VcsUtils.globalConfigFile());
+        VcsUtils.serialize(GlobalConfig.instance, GlobalConfig.globalConfigFile());
         VcsUtils.serialize(CommitConfig.instance, GlobalConfig.getHeadCommitDir() + configFile);
     }
 
     private static void deserialize(String configFile) throws IOException, ClassNotFoundException  {
-        GlobalConfig.instance = (GlobalConfig) VcsUtils.deserialize(VcsUtils.globalConfigFile());
+        GlobalConfig.instance = (GlobalConfig) VcsUtils.deserialize(GlobalConfig.globalConfigFile());
         CommitConfig.instance = (CommitConfig) VcsUtils.deserialize(GlobalConfig.getHeadCommitDir() + configFile);
     }
 }

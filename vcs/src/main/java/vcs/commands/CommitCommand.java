@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Parameters(commandNames = VcsUtils.COMMIT)
 public class CommitCommand extends Command implements Serializable {
 
     @Parameter(names = "-m", required = true, description = "Commit message")
@@ -24,6 +23,11 @@ public class CommitCommand extends Command implements Serializable {
 
     public CommitCommand(String message) {
         this.message = message;
+    }
+
+    @Override
+    public String name() {
+        return "commit";
     }
 
     /**
@@ -44,13 +48,13 @@ public class CommitCommand extends Command implements Serializable {
 
         GlobalConfig.instance.graph.commit(message);
 
-        String source = GlobalConfig.getProjectDir();
+        String source = GlobalConfig.projectDir();
         String dest = GlobalConfig.getHeadCommitDir();
 
         try {
             refreshSupervisedFilesList();
             diff = diff.stream()
-                    .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
+                    .filter(f -> new File(GlobalConfig.projectDir() + f).exists())
                     .collect(Collectors.toList());
 
             Files.createDirectories(Paths.get(dest));
@@ -77,7 +81,7 @@ public class CommitCommand extends Command implements Serializable {
     private void refreshSupervisedFilesList() {
         List<String> s = CommitConfig.instance.getSupervisedFiles()
                 .stream()
-                .filter(f -> new File(VcsUtils.projectDir() + "/" + f).exists())
+                .filter(f -> new File(GlobalConfig.projectDir() + f).exists())
                 .collect(Collectors.toList());
 
         CommitConfig.instance.clearSupervisedFilesList();
@@ -86,7 +90,7 @@ public class CommitCommand extends Command implements Serializable {
 
         s.forEach(f -> {
             try {
-                CommitConfig.instance.addSupervisedFileHash(f, VcsUtils.getFileHash(VcsUtils.projectDir() + "/" + f));
+                CommitConfig.instance.addSupervisedFileHash(f, VcsUtils.getFileHash(GlobalConfig.projectDir() + f));
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -60,7 +60,7 @@ public class CommitConfig implements Serializable {
     public List<String> differentFiles() {
         return getSupervisedFiles().stream().filter(f -> {
             try {
-                String current = VcsUtils.getFileHash(GlobalConfig.getProjectDir() + f);
+                String current = VcsUtils.getFileHash(GlobalConfig.projectDir() + f);
                 String old = getSupervisedFileHash(f);
 
                 return !current.equals(old) || getSupervisedFileCopyAddr(f) == null;
