@@ -22,6 +22,7 @@ public class VcsTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+
     private List<File> files;
 
     @Before
@@ -46,43 +47,7 @@ public class VcsTest {
         folder.delete();
     }
 
-    @Test
-    public void checkoutTest3() {
-        VCS.run("add", "a");
-        VCS.run("commit", "-m", "\"first commit\"");
 
-        try {
-            folder.newFile("b");
-
-            VCS.run("add", "b");
-            VCS.run("commit", "-m", "\"second commit\"");
-
-            folder.newFile("c");
-
-            VCS.run("add", "c");
-            VCS.run("commit", "-m", "\"third commit\"");
-
-            VCS.run("checkout", "-b", "master", "-c", "1");
-            assertFilesInDir(folder.getRoot(), ".vcs", "a");
-
-            VCS.run("checkout", "-b", "master", "-c", "3");
-            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
-
-            VcsUtils.deleteFiles(Collections.singletonList("a"), folder.getRoot().getAbsolutePath() + "/");
-            VCS.run("commit", "-m", "\"forth commit\"");
-
-            VCS.run("checkout", "-b", "master", "-c", "3");
-            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
-
-            VCS.run("checkout", "-b", "master", "-c", "4");
-            assertFilesInDir(folder.getRoot(), ".vcs", "b", "c");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
     public void simpleTest() {
         String expected = "added files:\n" +
                 "a\n" +
@@ -245,6 +210,42 @@ public class VcsTest {
     }
 
     @Test
+    public void checkoutTest3() {
+        VCS.run("add", "a");
+        VCS.run("commit", "-m", "\"first commit\"");
+
+        try {
+            folder.newFile("b");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "\"second commit\"");
+
+            folder.newFile("c");
+
+            VCS.run("add", "c");
+            VCS.run("commit", "-m", "\"third commit\"");
+
+            VCS.run("checkout", "-b", "master", "-c", "1");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a");
+
+            VCS.run("checkout", "-b", "master", "-c", "3");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VcsUtils.deleteFiles(Collections.singletonList("a"), folder.getRoot().getAbsolutePath() + "/");
+            VCS.run("commit", "-m", "\"forth commit\"");
+
+            VCS.run("checkout", "-b", "master", "-c", "3");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c");
+
+            VCS.run("checkout", "-b", "master", "-c", "4");
+            assertFilesInDir(folder.getRoot(), ".vcs", "b", "c");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void mergeTest() {
         checkoutTest2();
 
@@ -255,6 +256,10 @@ public class VcsTest {
         assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c", "d");
 
         VCS.run("log");
+    }
+
+    public void mergeTest2() {
+
     }
 
     @Test
@@ -268,6 +273,34 @@ public class VcsTest {
         assertEquals(GlobalConfig.getCurrentBranch(), "master");
         VCS.run("checkout", "-b", "br", "-c", "-1");
         assertEquals(GlobalConfig.getCurrentBranch(), "master");
+    }
+
+    @Test
+    public void cleanTest() {
+        VCS.run("add", "a");
+        VCS.run("commit", "-m", "first");
+
+        assertFilesInDir(folder.getRoot(), ".vcs", "a");
+
+        try {
+            folder.newFile("b");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "second");
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b");
+
+            folder.newFile("c");
+            folder.newFolder("f");
+
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "c", "f");
+
+            VCS.run("clean");
+
+            assertFilesInDir(folder.getRoot(), ".vcs", "a", "b", "f");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private String readFile(File f) throws IOException {
