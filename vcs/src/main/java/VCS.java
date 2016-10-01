@@ -18,7 +18,8 @@ public class VCS {
             new StatusCommand(),
             new BranchCommand(),
             new CleanCommand(),
-            new RmCommand()
+            new RmCommand(),
+            new ResetCommand()
     );
 
     static {

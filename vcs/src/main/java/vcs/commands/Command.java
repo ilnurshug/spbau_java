@@ -42,6 +42,7 @@ public abstract class Command {
     }
 
     protected static void serializeConfig() throws IOException {
+        CommitConfig.instance.clearDeletedFilesList();
         serialize("config");
     }
 

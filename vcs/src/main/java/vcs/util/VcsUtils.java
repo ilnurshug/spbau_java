@@ -106,4 +106,17 @@ public class VcsUtils {
 
         return md5;
     }
+
+    public static void listAllFiles(String directoryName, List<File> files) {
+        File directory = new File(directoryName);
+
+        File[] fList = directory.listFiles();
+        for (File file : fList) {
+            if (file.isFile()) {
+                files.add(file);
+            } else if (file.isDirectory()) {
+                listAllFiles(file.getAbsolutePath(), files);
+            }
+        }
+    }
 }

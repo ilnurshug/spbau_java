@@ -47,68 +47,6 @@ public class VcsTest {
         folder.delete();
     }
 
-
-    public void simpleTest() {
-        String expected = "added files:\n" +
-                "a\n" +
-                "---\n" +
-                "successful commit\n" +
-                "commit history of branch master\n" +
-                "1: first commit\n" +
-                "0: new branch - master\n" +
-                "---\n" +
-                "firstsecond\n" +
-                "successful commit\n" +
-                "commit history of branch master\n" +
-                "2: second commit\n" +
-                "1: first commit\n" +
-                "0: new branch - master\n" +
-                "---\n" +
-                "first\n" +
-                "commit history of branch master\n" +
-                "1: first commit\n" +
-                "0: new branch - master\n" +
-                "---\n" +
-                "firstsecond\n" +
-                "commit history of branch master\n" +
-                "2: second commit\n" +
-                "1: first commit\n" +
-                "0: new branch - master\n" +
-                "---";
-        try {
-            File out = new File("out");
-            System.setOut(new PrintStream(out));
-
-            VCS.run("add", "a");
-            VCS.run("commit", "-m", "\"first commit\"");
-            VCS.run("log");
-
-            File a = files.get(0);
-
-            Files.append("second", a, Charset.defaultCharset());
-            System.out.println(readFile(a));
-
-            VCS.run("commit", "-m", "\"second commit\"");
-            VCS.run("log");
-
-            VCS.run("checkout", "-b", "master", "-c", "1");
-
-            System.out.println(readFile(a));
-
-            VCS.run("log");
-            VCS.run("checkout", "-b", "master", "-c", "2");
-
-            System.out.println(readFile(a));
-
-            VCS.run("log");
-
-            assertEquals(expected, readFile(out));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Test
     public void addTest() {
         try {
@@ -334,6 +272,39 @@ public class VcsTest {
 
     }
 
+    @Test
+    public void statusTest() {
+        VCS.run("add", "a");
+        VCS.run("commit", "-m", "first");
+
+        try {
+            folder.newFile("b");
+            folder.newFile("c");
+
+            VCS.run("add", "b");
+            VCS.run("commit", "-m", "second");
+
+            VCS.run("rm", "-f", "a");
+
+            VCS.run("status");
+
+            checkSupervisedFilesList("a", "b");
+            checkDeletedFilesList("a");
+            checkUnsupervisedFilesList("c");
+
+            VCS.run("commit", "-m", "third");
+            VCS.run("status");
+
+            checkSupervisedFilesList("b");
+            checkDeletedFilesList();
+            checkUnsupervisedFilesList("c");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private String readFile(File f) throws IOException {
         return String.join("\n", Files.readLines(f, Charset.defaultCharset()));
     }
@@ -341,6 +312,16 @@ public class VcsTest {
     private void checkSupervisedFilesList(String... files) {
         Arrays.sort(files);
         assertArrayEquals(files, CommitConfig.instance.getSupervisedFiles().stream().sorted().toArray());
+    }
+
+    private void checkDeletedFilesList(String... files) {
+        Arrays.sort(files);
+        assertArrayEquals(files, CommitConfig.instance.getDeletedFiles().stream().sorted().toArray());
+    }
+
+    private void checkUnsupervisedFilesList(String... files) {
+        Arrays.sort(files);
+        assertArrayEquals(files, CommitConfig.instance.getUnsupervisedFiles().stream().sorted().toArray());
     }
 
     /**

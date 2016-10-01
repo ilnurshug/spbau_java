@@ -2,15 +2,16 @@ package vcs.config;
 
 import vcs.util.VcsUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommitConfig implements Serializable {
     public static CommitConfig instance = new CommitConfig();
+
+    private List<String> deletedFiles;
 
     private HashSet<String> supervisedFiles;
 
@@ -22,6 +23,30 @@ public class CommitConfig implements Serializable {
         supervisedFiles = new HashSet<>();
         supervisedFilesHashes = new HashMap<>();
         supervisedFileCopyAddr = new HashMap<>();
+
+        deletedFiles = new ArrayList<>();
+    }
+
+    public List<String> getUnsupervisedFiles() {
+        List<File> files = new LinkedList<>();
+        VcsUtils.listAllFiles(GlobalConfig.projectDir(), files);
+
+        return files.stream()
+                .map(f -> new File(GlobalConfig.projectDir()).toURI().relativize(f.toURI()).getPath())
+                .filter(f -> !CommitConfig.instance.isSupervised(f) && !f.startsWith(".vcs"))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getDeletedFiles() {
+        return deletedFiles;
+    }
+
+    public void addDeletedFile(String file) {
+        deletedFiles.add(file);
+    }
+
+    public void clearDeletedFilesList() {
+        deletedFiles = new ArrayList<>();
     }
 
     public List<String> getSupervisedFiles() {
@@ -34,6 +59,10 @@ public class CommitConfig implements Serializable {
 
     public void addSupervisedFile(String filename) {
         supervisedFiles.add(filename);
+    }
+
+    public void removeFromSupervisedList(String filename) {
+        supervisedFiles.remove(filename);
     }
 
     public void addSupervisedFileHash(String filename, String hash) {
