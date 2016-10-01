@@ -29,10 +29,19 @@ Supported commands
       Usage: init
 
     merge      Merge current branch with selected one
-      Usage: merge [branchname] Select branch
+      Usage: merge -b branchname 
 
-    status     Show list of supervised files
+    status     Show list of supervised, deleted and unsupervised files
       Usage: status 
+      
+    clean      Delete all unsupervised files 
+      Usage: clean
+      
+    rm         Delete selected file entirely
+      Usage: rm -f filename
+      
+    reset      Remove selected file from supervised files list
+      Usage: reset -f filename
 
     branch      Create or delete selected branch
       Usage: branch [options]
