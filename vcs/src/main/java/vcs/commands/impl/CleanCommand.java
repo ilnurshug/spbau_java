@@ -20,13 +20,11 @@ public class CleanCommand extends Command {
 
     @Override
     protected void execImpl() {
-        List<File> files = new LinkedList<>();
-        files.addAll(Arrays.asList(new File(GlobalConfig.projectDir()).listFiles()));
+        List<String> files = new LinkedList<>();
+        files.addAll(CommitConfig.instance.getUnsupervisedFiles());
 
         VcsUtils.deleteFiles(
                 files.stream()
-                        .filter(f -> !f.isDirectory())
-                        .map(File::getName)
                         .filter(f -> !CommitConfig.instance.isSupervised(f))
                         .collect(Collectors.toList()),
                 GlobalConfig.projectDir()
