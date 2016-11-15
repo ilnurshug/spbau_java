@@ -1,6 +1,6 @@
 package client;
 
-import utils.Request;
+import utils.Requests;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,40 +20,15 @@ public class Client {
     }
 
     public byte[] executeGet(String path) throws IOException {
-        outputStream.writeInt(Request.GET.type);
-        outputStream.writeUTF(path);
-        outputStream.flush();
-
-        final int size = inputStream.readInt();
-        byte[] data = new byte[size];
-        int read = 0;
-        while (read < size) {
-            read += inputStream.read(data, read, size - read);
-        }
-
-        return data;
+        return client.requests.Get.execute(inputStream, outputStream, path);
     }
 
     public int executeList(String path, List<String> items, List<Boolean> isDir) throws IOException {
-        outputStream.writeInt(Request.LIST.type);
-        outputStream.writeUTF(path);
-        outputStream.flush();
-
-        final int size = inputStream.readInt();
-
-        for (int i = 0; i < size; i++) {
-            String item = inputStream.readUTF();
-            Boolean isDirectory = inputStream.readBoolean();
-
-            items.add(item);
-            isDir.add(isDirectory);
-        }
-
-        return size;
+        return client.requests.List.execute(inputStream, outputStream, path, items, isDir);
     }
 
     public void closeConnection() throws IOException {
-        outputStream.writeInt(Request.DISCONNECT.type);
+        outputStream.writeInt(Requests.DISCONNECT);
         outputStream.flush();
 
         if (!socket.isClosed()) {

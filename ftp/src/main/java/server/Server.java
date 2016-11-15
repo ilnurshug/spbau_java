@@ -1,17 +1,13 @@
 package server;
 
 
-import org.apache.commons.io.FileUtils;
-import utils.Request;
+import utils.Requests;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Server implements Runnable {
     private final ServerSocket socket;
@@ -21,9 +17,7 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        while (true) {
-            processConnection();
-        }
+        processConnection();
     }
 
     public void shutdown() {
@@ -68,16 +62,20 @@ class ClientHandler implements Runnable {
 
     private boolean handleRequest() {
         try {
-            Request req = Request.fromInt(inputStream.readInt());
+            int req = inputStream.readInt();
+
+            if (!Requests.validRequest(req)) {
+                throw new Exception("invalid request");
+            }
 
             switch (req) {
-                case DISCONNECT:
+                case Requests.DISCONNECT:
                     return false;
-                case LIST:
-                    executeList();
+                case Requests.LIST:
+                    server.requests.List.execute(inputStream, outputStream);
                     break;
-                case GET:
-                    executeGet();
+                case Requests.GET:
+                    server.requests.Get.execute(inputStream, outputStream);
                     break;
             }
         } catch (Exception exception) {
@@ -86,63 +84,6 @@ class ClientHandler implements Runnable {
         }
 
         return true;
-    }
-
-    private void executeList() throws IOException {
-        final String path = System.getProperty("user.dir") + "/" + inputStream.readUTF();
-
-        List<File> items = new ArrayList<File>();
-        List<Boolean> isDir = new ArrayList<Boolean>();
-
-        try {
-            listAllFiles(path, items, isDir);
-        } catch (IOException e) {
-            outputStream.writeInt(0);
-            return;
-        }
-
-        outputStream.writeInt(items.size());
-        for (int i = 0; i < items.size(); i++) {
-            outputStream.writeUTF(items.get(i).getName());
-            outputStream.writeBoolean(isDir.get(i));
-        }
-
-        outputStream.flush();
-    }
-
-    private void executeGet() throws IOException {
-        String path = System.getProperty("user.dir") + "/" + inputStream.readUTF();
-        byte[] bytes;
-
-        try {
-            bytes = FileUtils.readFileToByteArray(new File(path));
-        } catch (IOException error) {
-            outputStream.writeInt(0);
-            return;
-        }
-
-        outputStream.writeInt(bytes.length);
-
-        for (int i = 0; i < bytes.length; i++) {
-            outputStream.writeByte(bytes[i]);
-        }
-
-        outputStream.flush();
-    }
-
-    private static void listAllFiles(String directoryName, List<File> items, List<Boolean> isDir) throws IOException {
-        File directory = new File(directoryName);
-
-        File[] itemList = directory.listFiles();
-
-        if (itemList == null) {
-            throw new IOException();
-        }
-
-        for (File item : itemList) {
-            items.add(item);
-            isDir.add(item.isDirectory());
-        }
     }
 
 }
