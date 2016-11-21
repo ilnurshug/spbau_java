@@ -17,7 +17,9 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        processConnection();
+        while (true) {
+            processConnection();
+        }
     }
 
     public void shutdown() {
@@ -51,12 +53,10 @@ class ClientHandler implements Runnable {
     public void run() {
         while (!socket.isClosed() && handleRequest()) {}
 
-        if (!socket.isClosed()) {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
     }
 

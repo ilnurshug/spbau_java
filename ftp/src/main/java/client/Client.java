@@ -19,7 +19,7 @@ public class Client {
         outputStream = new DataOutputStream(socket.getOutputStream());
     }
 
-    public byte[] executeGet(String path) throws IOException {
+    public client.requests.Get.ByteStream executeGet(String path) throws IOException {
         return client.requests.Get.execute(inputStream, outputStream, path);
     }
 
@@ -31,8 +31,6 @@ public class Client {
         outputStream.writeInt(Requests.DISCONNECT);
         outputStream.flush();
 
-        if (!socket.isClosed()) {
-            socket.close();
-        }
+        socket.close();
     }
 }

@@ -20,6 +20,7 @@ public class List {
             listAllFiles(path, items, isDir);
         } catch (IOException e) {
             outputStream.writeInt(0);
+            outputStream.flush();
             return;
         }
 

@@ -1,34 +1,34 @@
 package server.requests;
 
 
-import org.apache.commons.io.FileUtils;
+import utils.Requests;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class Get {
 
     static public void execute(final DataInputStream inputStream,
                                final DataOutputStream outputStream) throws IOException {
         String path = System.getProperty("user.dir") + "/" + inputStream.readUTF();
-        byte[] bytes;
 
-        try {
-            bytes = FileUtils.readFileToByteArray(new File(path));
-        } catch (IOException error) {
-            outputStream.writeInt(0);
+        File f = new File(path);
+        if (!f.exists())
+        {
+            outputStream.writeLong(0);
+            outputStream.flush();
             return;
         }
 
-        outputStream.writeInt(bytes.length);
+        final long length = f.length();
 
-        for (byte b : bytes) {
-            outputStream.writeByte(b);
+        byte[] buffer = new byte[Requests.BUFFER_SIZE];
+        FileInputStream in = new FileInputStream(path);
+        while (in.read(buffer) != -1)
+        {
+            outputStream.writeLong(length);
+            outputStream.write(buffer);
+            outputStream.flush();
         }
-
-        outputStream.flush();
     }
 
 }

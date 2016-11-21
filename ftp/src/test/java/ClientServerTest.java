@@ -1,36 +1,35 @@
 import client.Client;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import server.Server;
+import client.requests.Get.ByteStream;
+import utils.Requests;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class ClientServerTest {
-    private Thread serverThread;
-    private Server server;
-    private Client client;
+    private static Thread serverThread;
+    private static Server server;
+    private static Client client;
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder folder = new TemporaryFolder();
 
-    @Before
-    public void prepare() {
+    @BeforeClass
+    public static void prepare() {
         prepareFolder();
         runClientServer();
     }
 
-    private void prepareFolder() {
+    private static void prepareFolder() {
         System.setProperty("user.dir", folder.getRoot().getAbsolutePath());
         try {
             folder.newFolder("folderA");
@@ -46,7 +45,7 @@ public class ClientServerTest {
         }
     }
 
-    private void runClientServer() {
+    private static void runClientServer() {
         try {
             server = new Server(8080);
             serverThread = new Thread(server);
@@ -58,10 +57,19 @@ public class ClientServerTest {
         }
     }
 
-    @After
-    public void shutdownServer() {
-        server.shutdown();
-        serverThread.interrupt();
+    @AfterClass
+    public static void shutdownServer() {
+        if (server != null) {
+            server.shutdown();
+        }
+        if (serverThread != null) {
+            serverThread.interrupt();
+        }
+        try {
+            client.closeConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -88,19 +96,61 @@ public class ClientServerTest {
     @Test
     public void executeGetTest() {
         try {
-            byte[] data = client.executeGet("fileA");
-            byte[] expected = FileUtils.readFileToByteArray(new File(folder.getRoot().getAbsolutePath(), "fileA"));
+            ByteStream bs = client.executeGet("fileA");
+            check(bs, new File(folder.getRoot().getAbsolutePath(), "fileA").getAbsolutePath());
 
-            assertArrayEquals(expected, data);
+            bs = client.executeGet("fileB");
+            check(bs, new File(folder.getRoot().getAbsolutePath(), "fileB").getAbsolutePath());
 
-            data = client.executeGet("fileB");
-            expected = FileUtils.readFileToByteArray(new File(folder.getRoot().getAbsolutePath(), "fileB"));
-            assertArrayEquals(expected, data);
-
-            assertEquals(0, client.executeGet("NonExistingFile").length);
-        } catch (IOException e) {
+            bs = client.executeGet("NonExistingFile");
+            bs.readChunk();
+            assertEquals(0L, bs.getFileLength());
+        }
+        catch (IOException e) {
             e.printStackTrace();
             assert false;
         }
+    }
+
+    @Test
+    public void multipleClientsTest() {
+        try {
+            final Client client2 = new Client("127.0.0.1", 8080);
+
+            ByteStream bs = client.executeGet("fileA");
+            check(bs, new File(folder.getRoot().getAbsolutePath(), "fileA").getAbsolutePath());
+
+            bs = client2.executeGet("fileB");
+            check(bs, new File(folder.getRoot().getAbsolutePath(), "fileB").getAbsolutePath());
+
+            client2.closeConnection();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+
+    private boolean check(ByteStream bs, String path) throws IOException {
+        long len = 0;
+        byte[] buffer = new byte[Requests.BUFFER_SIZE];
+        int bytesRead = 0;
+
+        FileInputStream in = new FileInputStream(path);
+
+        boolean f = true;
+        while ((bytesRead = in.read(buffer)) != -1)
+        {
+            len += bytesRead;
+
+            List<Byte> b = bs.readChunk();
+            for (int i = 0; i < bytesRead; i++)
+            {
+                f &= (b.get(i) == buffer[i]);
+            }
+        }
+
+        f &= (len == bs.getFileLength() && len == new File(path).length());
+        return f;
     }
 }

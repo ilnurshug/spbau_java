@@ -7,6 +7,8 @@ public class Requests
     public static final int LIST = 1;
     public static final int GET = 2;
 
+    public static final int BUFFER_SIZE = 512;
+
     public static boolean validRequest(int r)
     {
         return r >= 0 && r <= 2;
