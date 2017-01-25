@@ -13,13 +13,35 @@ import edu.spbau.master.java.torrent.model.FileInfo;
 import edu.spbau.master.java.torrent.shared.exception.InvalidDataStreamException;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.NumberFormatter;
-import java.io.*;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 public class ClientGUIForm extends JFrame {
@@ -31,6 +53,8 @@ public class ClientGUIForm extends JFrame {
     private static final String COLUMN_SIZE = "Size";
 
     private static final String COLUMN_PROGRESS = "Progress";
+
+    private static final int COLUMN_PROGRESS_ID = 2;
 
     private JPanel rootPanel;
     private JTextField serverAddressTextField;
@@ -62,13 +86,12 @@ public class ClientGUIForm extends JFrame {
                 setWorkMode(true);
 
             } catch (Exception e1) {
+                log.error("Exception during start! Cause: " + e1.getMessage(), e);
                 JOptionPane.showMessageDialog(this, "Exception during start! Cause: " + e1.getMessage());
             }
 
 
         });
-
-
         setWorkMode(false);
 
         setVisible(true);
@@ -95,8 +118,28 @@ public class ClientGUIForm extends JFrame {
             clientDataHolder = ClientDataHolderImpl.newInstance();
         }
 
-        ClientServer clientServer = new ClientServer(new IncomingQueryHandler(clientDataHolder, new FilePartWriterImpl()), port);
-        ClientScheduler clientScheduler = new ClientScheduler(serverAddress, port, clientDataHolder);
+        ConcurrentMap<FileInfo, Integer> fileInfoToRowNumMap = new ConcurrentHashMap<>();
+
+        loadingFiles.setModel(tableModel);
+        tableModel.addColumn(COLUMN_NAME);
+        tableModel.addColumn(COLUMN_SIZE);
+        tableModel.addColumn(COLUMN_PROGRESS);
+
+        loadingFiles.getColumn(COLUMN_PROGRESS).setCellRenderer(new ProgressCellRender());
+
+        ClientServer clientServer = new ClientServer(
+                new IncomingQueryHandler(
+                        clientDataHolder,
+                        new FilePartWriterImpl()
+                ),
+                port
+        );
+        ClientScheduler clientScheduler = new ClientScheduler(
+                serverAddress,
+                port,
+                clientDataHolder
+        );
+
         LoadingManager loadingManager = new LoadingManager(
                 serverAddress,
                 new QuerySender(
@@ -104,10 +147,27 @@ public class ClientGUIForm extends JFrame {
                 ),
                 clientDataHolder,
                 partiallyLoadedFile -> {
+                    int progress = (partiallyLoadedFile.getLoadedPartCount().get() * 100) / partiallyLoadedFile.getFileInfo().getPartCount();
+                    int rowNum =
+                            fileInfoToRowNumMap.getOrDefault(partiallyLoadedFile.getFileInfo(), -1);
+                    if (rowNum != -1) {
+                        tableModel.setValueAt(progress, fileInfoToRowNumMap.get(partiallyLoadedFile.getFileInfo()), COLUMN_PROGRESS_ID);
+                    } else {
+                        log.warn("Can't find row num for file info {}", partiallyLoadedFile.getFileInfo());
+                    }
                 },
                 partiallyLoadedFile -> {
+                    int progress = (partiallyLoadedFile.getLoadedPartCount().get() * 100) / partiallyLoadedFile.getFileInfo().getPartCount();
+                    int rowNum =
+                            fileInfoToRowNumMap.getOrDefault(partiallyLoadedFile.getFileInfo(), -1);
+                    if (rowNum != -1) {
+                        tableModel.setValueAt(progress, fileInfoToRowNumMap.get(partiallyLoadedFile.getFileInfo()), COLUMN_PROGRESS_ID);
+                    } else {
+                        log.warn("Can't find row num for file info {}", partiallyLoadedFile.getFileInfo());
+                    }
                 }
         );
+
         ClientUser clientUser = new ClientUser(
                 serverAddress,
                 clientDataHolder,
@@ -117,7 +177,6 @@ public class ClientGUIForm extends JFrame {
                 )
         );
 
-        clientScheduler.start();
         new Thread(() -> {
             try {
                 clientServer.listen();
@@ -125,6 +184,7 @@ public class ClientGUIForm extends JFrame {
                 e.printStackTrace();
             }
         }).start();
+        clientScheduler.start();
 
         uploadFileButton.addActionListener(e -> {
             File selectedFile = getFileFromUser();
@@ -139,7 +199,6 @@ public class ClientGUIForm extends JFrame {
 
         updateButton.addActionListener(e -> {
             try {
-
                 List<FileInfo> allTorrentFiles = clientUser.getAllTorrentFiles();
                 DefaultListModel<FileInfo> model = new DefaultListModel<>();
                 allTorrentFiles.forEach(model::addElement);
@@ -151,9 +210,34 @@ public class ClientGUIForm extends JFrame {
             }
         });
 
+        availableFiles.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    log.info("Add new file to loading files.");
+                    FileInfo fileInfo = availableFiles.getModel().getElementAt(availableFiles.locationToIndex(e.getPoint()));
+                    File destination = getFileFromUser();
+                    if (destination != null) {
+                        try {
+                            int rowNum = tableModel.getRowCount();
+                            fileInfoToRowNumMap.putIfAbsent(fileInfo, rowNum);
+                            clientUser.addToLoadingQueue(destination.getPath(), fileInfo.getId());
+                            tableModel.addRow(new Object[]{fileInfo.getName(), fileInfo.getSize(), 0});
+                        } catch (IOException e1) {
+                            log.error("Exception while file loading.", e1);
+                            JOptionPane.showMessageDialog(ClientGUIForm.this, "Exception while file loading! Cause: " + e1.getMessage());
+                        }
+
+                    }
+                }
+                super.mouseClicked(e);
+            }
+        });
+
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
+                log.info("Stop application.");
                 clientServer.stop();
                 clientScheduler.stop();
                 loadingManager.stop();
@@ -189,5 +273,14 @@ public class ClientGUIForm extends JFrame {
         formatter.setAllowsInvalid(false);
 
         listeningPortFormattedTextField = new JFormattedTextField(format);
+        listeningPortFormattedTextField.setValue(1488);
+    }
+
+    public static class ProgressCellRender extends JProgressBar implements TableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setValue((int) value);
+            return this;
+        }
     }
 }
